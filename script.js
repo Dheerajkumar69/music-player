@@ -91,6 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadedTracks: [],
         customPlaylists: [],
         likedSongs: [], // Store liked songs
+        playHistory: [], // Store listening history
+        lastPlayedLimit: 50, // Maximum number of tracks to keep in history
+        currentTrackRecorded: false,
     };
 
     // Cache DOM elements
@@ -159,6 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
         songSearch: document.getElementById('song-search'),
         playlistsGrid: document.querySelector('.playlists-grid'),
         customPlaylistsList: document.querySelector('.playlist-list'),
+        
+        // Last played page elements
+        historyTimeline: document.querySelector('.history-timeline'),
+        emptyHistory: document.getElementById('empty-history'),
+        
+        // Recommended page elements
+        recommendationGroups: document.querySelector('.recommendation-groups'),
+        artistRecommendations: document.querySelector('.artist-recommendations'),
+        emptyRecommendations: document.getElementById('empty-recommendations'),
+        
+        // Volume slider
+        volumeSlider: document.getElementById('volume-slider'),
     };
 
     // Storage management utilities
@@ -301,19 +316,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function togglePlay() {
         if (playerState.isPlaying) {
             playerState.audioElement.pause();
-            elements.playBtn.classList.remove('bi-pause-circle-fill');
-            elements.playBtn.classList.add('bi-play-circle-fill');
         } else {
             playerState.audioElement.play().catch(e => {
                 console.error('Error playing audio:', e);
-                // If there's an error, we might need to show a message to the user
-                alert('Please add audio files to the audio folder to enable playback');
+                showToast('Error playing track', 'error');
             });
-            elements.playBtn.classList.remove('bi-play-circle-fill');
-            elements.playBtn.classList.add('bi-pause-circle-fill');
+            
+            // Add to history when manually playing a track (not just on end)
+            if (playerState.currentTrack) {
+                addToPlayHistory(playerState.currentTrack);
+            }
         }
         
+        // Toggle play state
         playerState.isPlaying = !playerState.isPlaying;
+        
+        // Update UI
+        elements.playBtn.classList.toggle('bi-play-circle-fill', !playerState.isPlaying);
+        elements.playBtn.classList.toggle('bi-pause-circle-fill', playerState.isPlaying);
     }
 
     // Format time from seconds to MM:SS
@@ -464,7 +484,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 playerState.audioElement.currentTime = 0;
                 playerState.audioElement.play();
             } else {
-                // Otherwise play the next track
+                // Add current track to history before moving to next
+                addToPlayHistory(playerState.currentTrack);
+                
+                // Play the next track
                 playNext();
             }
         });
@@ -741,16 +764,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             tabIndex = 0; // Discover tab
                             break;
                         case 'Last Played':
-                            tabIndex = -1; // Unlinked
+                            tabIndex = 3; // Unlinked
                             break;
                         case 'Recommended':
-                            tabIndex = -1; // Unlinked
+                            tabIndex = 4; // Unlinked
                             break;
                         case 'My Uploads':
-                            tabIndex = 1; // My Library tab (previously Last Played)
+                            tabIndex = 1; // My Library tab
                             break;
                         case 'My Playlists':
-                            tabIndex = 2; // Radio tab (previously Recommended)
+                            tabIndex = 2; // Radio tab
                             break;
                     }
                     
@@ -801,6 +824,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     p.classList.remove('active');
                 }
             });
+            
+            // Call specific render functions based on which tab is now active
+            const lastPlayedIndex = Array.from(elements.contentPages).findIndex(page => page.classList.contains('last-played-page'));
+            const recommendedIndex = Array.from(elements.contentPages).findIndex(page => page.classList.contains('recommended-page'));
+            
+            switch(tabIndex) {
+                case lastPlayedIndex: // Last Played tab
+                    renderLastPlayed();
+                    break;
+                case recommendedIndex: // Recommended tab
+                    renderRecommendedSongs();
+                    break;
+                case 1: // Library tab
+                    // Update library view if we have a render function for it
+                    if (typeof renderLibrary === 'function') {
+                        renderLibrary();
+                    }
+                    break;
+                case 0: // Discover/Playlists tab
+                    // Update playlists view if needed
+                    if (typeof renderPlaylists === 'function') {
+                        renderPlaylists();
+                    }
+                    break;
+            }
             
             // If coming from sidebar, we don't need to update sidebar
             // If coming from top tabs, update sidebar to match the selected tab
@@ -932,13 +980,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabNames = Array.from(elements.tabItems).map(tab => tab.textContent.trim());
         console.log('Tab names:', tabNames); // Debug
         
+        // Count all content pages to identify last-played and recommended indices
+        const contentPageCount = elements.contentPages.length;
+        // Last-played and recommended pages are typically the last two pages
+        const lastPlayedIndex = Array.from(elements.contentPages).findIndex(page => page.classList.contains('last-played-page'));
+        const recommendedIndex = Array.from(elements.contentPages).findIndex(page => page.classList.contains('recommended-page'));
+        
+        console.log('Last played index:', lastPlayedIndex, 'Recommended index:', recommendedIndex); // Debug
+        
         // Properly map sidebar items to top tabs
         const sidebarToTabMap = {
             'Playlist': tabNames.indexOf('Discover'),
-            'Last Played': -1, // Unlink Last Played (no matching tab)
-            'Recommended': -1, // Unlink Recommended (no matching tab)
-            'My Uploads': tabNames.indexOf('My Library'), // Transfer Last Played page to My Uploads
-            'My Playlists': tabNames.indexOf('Radio') // Transfer Recommended page to My Playlists
+            'Last Played': lastPlayedIndex, // Map to Last Played page
+            'Recommended': recommendedIndex, // Map to Recommended page
+            'My Uploads': tabNames.indexOf('My Library'), // Connect to My Library tab
+            'My Playlists': tabNames.indexOf('Radio') // Connect to Radio tab
         };
         
         console.log('Sidebar to tab map:', sidebarToTabMap); // Debug
@@ -946,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add global mapping for use in other functions
         window.sidebarToTabMap = sidebarToTabMap;
         
+        // Rest of the function remains the same
         // Setup tab click handlers
         elements.tabItems.forEach((tab, index) => {
             tab.addEventListener('click', function() {
@@ -1611,133 +1668,79 @@ document.addEventListener('DOMContentLoaded', () => {
         initPlaylistCreator();
         initStorageManagement();
         
-        // Load saved tracks and playlists from local storage
-        loadFromLocalStorage();
+        // Initialize player state
+        playerState.uploadedTracks = loadFromLocalStorage('uploadedTracks') || [];
+        playerState.customPlaylists = loadFromLocalStorage('customPlaylists') || [];
+        playerState.likedSongs = loadFromLocalStorage('likedSongs') || [];
+        playerState.playHistory = loadFromLocalStorage('playHistory') || [];
         
-        // Create default liked songs playlist if it doesn't exist
-        if (!playerState.customPlaylists.some(p => p.id === 'liked-songs')) {
-            createLikedSongsPlaylist();
+        // Set up audio element
+        playerState.audioElement = new Audio();
+        playerState.audioElement.volume = 0.7;
+        
+        // Add event listener for song end
+        playerState.audioElement.addEventListener('ended', function() {
+            playNextTrack();
+        });
+        
+        // Add event listener for play time tracking
+        playerState.audioElement.addEventListener('timeupdate', function() {
+            if (playerState.currentTrack) {
+                // Record play in history when reaching 30 seconds or 50% of the song
+                const threshold = Math.min(30, playerState.audioElement.duration * 0.5);
+                if (playerState.audioElement.currentTime >= threshold && !playerState.currentTrackRecorded) {
+                    addToPlayHistory(playerState.currentTrack);
+                    playerState.currentTrackRecorded = true;
+                }
+            }
+        });
+        
+        // Reset recording flag when a new track starts
+        playerState.audioElement.addEventListener('play', function() {
+            playerState.currentTrackRecorded = false;
+        });
+        
+        // Create liked songs playlist if it doesn't exist
+        updateLikedSongsPlaylist();
+        
+        // Load initial view
+        renderLastPlayed();
+        renderRecommendedSongs();
+        
+        // Set initial volume
+        elements.volumeSlider.value = playerState.audioElement.volume * 100;
+        
+        // Diagnostic check for page loading
+        if (
+            !elements.uploadContainer || 
+            !elements.libraryContainer || 
+            !elements.playlistsContainer ||
+            !elements.lastPlayedContainer ||
+            !elements.recommendedContainer
+        ) {
+            console.error('Error initializing pages. Some pages might not be properly loaded.');
         }
     }
 
     // Save player state to local storage
-    function saveToLocalStorage() {
-        // Convert tracks to storable format (serialize audio data to base64)
-        const tracksToPersist = playerState.uploadedTracks.map(track => {
-            // Don't include the file object itself as it's not serializable
-            const { file, ...trackWithoutFile } = track;
-            return trackWithoutFile;
-        });
-        
-        // Create storage object
-        const storageData = {
-            uploadedTracks: tracksToPersist,
-            customPlaylists: playerState.customPlaylists,
-            likedSongs: playerState.likedSongs,
-            lastUpdated: new Date().toISOString()
-        };
-        
+    function saveToLocalStorage(key, value) {
         try {
-            localStorage.setItem('musicPlayerData', JSON.stringify(storageData));
-            return true;
-        } catch (e) {
-            console.error('Error saving to localStorage:', e);
-            if (e.name === 'QuotaExceededError') {
-                showToast('Storage limit exceeded. Some items may not be saved.', 'error');
-            }
-            return false;
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            console.error(`Error saving ${key} to localStorage:`, error);
+            showToast(`Error saving data: ${error.message}`, 'error');
         }
     }
     
     // Load player state from local storage
-    function loadFromLocalStorage() {
+    function loadFromLocalStorage(key) {
         try {
-            const storageData = localStorage.getItem('musicPlayerData');
-            if (!storageData) return;
-            
-            const parsedData = JSON.parse(storageData);
-            
-            // Restore uploaded tracks
-            if (parsedData.uploadedTracks && Array.isArray(parsedData.uploadedTracks)) {
-                // Clear existing uploaded tracks
-                playerState.uploadedTracks = [];
-                
-                // Restore each track
-                parsedData.uploadedTracks.forEach(track => {
-                    // Convert base64 back to a usable audio URL if it exists
-                    if (track.audioData) {
-                        // Create a blob from the base64 data
-                        const byteString = atob(track.audioData.split(',')[1]);
-                        const mimeType = track.audioData.split(',')[0].split(':')[1].split(';')[0];
-                        const arrayBuffer = new ArrayBuffer(byteString.length);
-                        const uint8Array = new Uint8Array(arrayBuffer);
-                        
-                        for (let i = 0; i < byteString.length; i++) {
-                            uint8Array[i] = byteString.charCodeAt(i);
-                        }
-                        
-                        const blob = new Blob([arrayBuffer], { type: mimeType });
-                        track.audio = URL.createObjectURL(blob);
-                    }
-                    
-                    // Add to player state
-                    playerState.uploadedTracks.push(track);
-                    
-                    // Add to UI
-                    addUploadItem(track, false);
-                });
-                
-                showToast(`Restored ${playerState.uploadedTracks.length} tracks from your library`, 'success');
-            }
-            
-            // Restore liked songs
-            if (parsedData.likedSongs && Array.isArray(parsedData.likedSongs)) {
-                playerState.likedSongs = parsedData.likedSongs;
-            }
-            
-            // Restore custom playlists
-            if (parsedData.customPlaylists && Array.isArray(parsedData.customPlaylists)) {
-                // Clear existing playlists
-                playerState.customPlaylists = [];
-                elements.customPlaylistsList.innerHTML = '';
-                elements.playlistsGrid.innerHTML = '';
-                
-                // Restore each playlist
-                parsedData.customPlaylists.forEach(playlist => {
-                    // If the playlist has tracks, ensure they have valid audio URLs
-                    if (playlist.tracks && Array.isArray(playlist.tracks)) {
-                        playlist.tracks.forEach(track => {
-                            // Find the corresponding uploaded track that might have an updated audio URL
-                            const matchingTrack = playerState.uploadedTracks.find(t => t.id === track.id);
-                            if (matchingTrack) {
-                                track.audio = matchingTrack.audio;
-                            }
-                        });
-                    }
-                    
-                    // Add to player state
-                    playerState.customPlaylists.push(playlist);
-                    
-                    // Add to UI
-                    addPlaylistToSidebar(playlist);
-                    addPlaylistCard(playlist);
-                });
-                
-                if (playerState.customPlaylists.length > 0) {
-                    showToast(`Restored ${playerState.customPlaylists.length} playlists`, 'success');
-                }
-            } else {
-                // If no playlists were loaded and we have liked songs, create the liked songs playlist
-                if (playerState.likedSongs.length > 0) {
-                    createLikedSongsPlaylist();
-                }
-            }
-            
-            // Update selectable songs for playlist creation
-            updateSelectableSongs();
-        } catch (e) {
-            console.error('Error loading from localStorage:', e);
-            showToast('Failed to load your saved music library', 'error');
+            const value = localStorage.getItem(key);
+            return value ? JSON.parse(value) : null;
+        } catch (error) {
+            console.error(`Error loading ${key} from localStorage:`, error);
+            showToast(`Error loading data: ${error.message}`, 'error');
+            return null;
         }
     }
 
@@ -1879,6 +1882,412 @@ document.addEventListener('DOMContentLoaded', () => {
             addPlaylistToSidebar(likedPlaylist);
             addPlaylistCard(likedPlaylist);
         }
+    }
+
+    // Function to add a track to play history
+    function addToPlayHistory(track) {
+        // Create a copy of the track with a timestamp
+        const historyEntry = {
+            ...track,
+            playedAt: new Date().toISOString()
+        };
+        
+        // Check if the track is already in history
+        const existingIndex = playerState.playHistory.findIndex(t => t.id === track.id);
+        
+        // If it exists, remove it
+        if (existingIndex !== -1) {
+            playerState.playHistory.splice(existingIndex, 1);
+        }
+        
+        // Add to the beginning of history array
+        playerState.playHistory.unshift(historyEntry);
+        
+        // Keep history size limited
+        if (playerState.playHistory.length > playerState.lastPlayedLimit) {
+            playerState.playHistory = playerState.playHistory.slice(0, playerState.lastPlayedLimit);
+        }
+        
+        // Save to local storage
+        saveToLocalStorage('playHistory', playerState.playHistory);
+        
+        // Update last played rendering if that page is active
+        if (activeTab === 6) {
+            renderLastPlayed();
+        }
+        
+        // Update recommendations if that page is active
+        if (activeTab === 7) {
+            renderRecommendedSongs();
+        }
+    }
+
+    // Function to render last played tracks
+    function renderLastPlayed() {
+        const historyTimeline = elements.historyTimeline;
+        const emptyHistory = elements.emptyHistory;
+        
+        // Clear current content
+        historyTimeline.innerHTML = '';
+        
+        // Check if we have any history
+        if (playerState.playHistory.length === 0) {
+            emptyHistory.style.display = 'flex';
+            return;
+        }
+        
+        // Hide empty state
+        emptyHistory.style.display = 'none';
+        
+        // Group tracks by day
+        const groupedHistory = {};
+        
+        playerState.playHistory.forEach(track => {
+            const date = new Date(track.playedAt);
+            const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            if (!groupedHistory[dateKey]) {
+                groupedHistory[dateKey] = [];
+            }
+            
+            groupedHistory[dateKey].push(track);
+        });
+        
+        // Sort dates newest first
+        const sortedDates = Object.keys(groupedHistory).sort((a, b) => b.localeCompare(a));
+        
+        // Create HTML for each day
+        sortedDates.forEach(dateKey => {
+            const tracks = groupedHistory[dateKey];
+            const dateObj = new Date(dateKey);
+            
+            // Format date: "Today", "Yesterday", or date
+            let dateText = '';
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (dateKey === today.toISOString().split('T')[0]) {
+                dateText = 'Today';
+            } else if (dateKey === yesterday.toISOString().split('T')[0]) {
+                dateText = 'Yesterday';
+            } else {
+                dateText = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+            
+            // Create day container
+            const dayEl = document.createElement('div');
+            dayEl.className = 'history-day';
+            
+            // Add day header
+            dayEl.innerHTML = `
+                <div class="history-day-header">
+                    <div class="history-date">${dateText}</div>
+                    <div class="history-divider"></div>
+                </div>
+            `;
+            
+            // Add tracks for this day
+            const tracksContainer = document.createElement('div');
+            tracksContainer.className = 'history-tracks';
+            
+            tracks.forEach(track => {
+                const time = new Date(track.playedAt).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                const trackEl = document.createElement('div');
+                trackEl.className = 'history-item';
+                trackEl.innerHTML = `
+                    <div class="history-time">${time}</div>
+                    <img src="${track.cover}" alt="${track.title}">
+                    <div class="history-item-info">
+                        <h4>${track.title}</h4>
+                        <p>${track.artist}</p>
+                    </div>
+                    <div class="history-item-actions">
+                        <button class="play-history-btn" data-track-id="${track.id}">
+                            <i class="bi bi-play-circle"></i>
+                        </button>
+                        <button class="like-history-btn" data-track-id="${track.id}">
+                            <i class="bi ${playerState.likedSongs.some(t => t.id === track.id) ? 'bi-heart-fill' : 'bi-heart'}"></i>
+                        </button>
+                    </div>
+                `;
+                
+                tracksContainer.appendChild(trackEl);
+            });
+            
+            dayEl.appendChild(tracksContainer);
+            historyTimeline.appendChild(dayEl);
+        });
+        
+        // Add event listeners to play buttons
+        const playButtons = document.querySelectorAll('.play-history-btn');
+        playButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const trackId = this.dataset.trackId;
+                const track = findTrackById(trackId);
+                if (track) {
+                    playTrack(track);
+                }
+            });
+        });
+        
+        // Add event listeners to like buttons
+        const likeButtons = document.querySelectorAll('.like-history-btn');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const trackId = this.dataset.trackId;
+                const track = findTrackById(trackId);
+                if (track) {
+                    toggleLiked(track);
+                    // Update heart icon
+                    const icon = this.querySelector('i');
+                    if (playerState.likedSongs.some(t => t.id === trackId)) {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                    } else {
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                    }
+                }
+            });
+        });
+    }
+
+    // Function to find a track by ID across all track sources
+    function findTrackById(trackId) {
+        // Check in main tracks array
+        let track = tracks.find(t => t.id === trackId);
+        if (track) return track;
+        
+        // Check in uploaded tracks
+        track = playerState.uploadedTracks.find(t => t.id === trackId);
+        if (track) return track;
+        
+        // Check in play history (for tracks that might have been removed)
+        track = playerState.playHistory.find(t => t.id === trackId);
+        return track;
+    }
+
+    // Function to play a track directly
+    function playTrack(track) {
+        // Stop current playback
+        playerState.audioElement.pause();
+        
+        // Set as current track
+        playerState.currentTrack = track;
+        playerState.audioElement.src = track.audio;
+        
+        // Update UI
+        elements.nowPlayingImg.src = track.cover;
+        elements.nowPlayingTitle.textContent = track.title;
+        elements.nowPlayingArtist.textContent = track.artist;
+        
+        // Update play button
+        elements.playBtn.classList.remove('bi-play-circle-fill');
+        elements.playBtn.classList.add('bi-pause-circle-fill');
+        
+        // Start playing
+        playerState.audioElement.play();
+        playerState.isPlaying = true;
+        
+        // Add to history
+        addToPlayHistory(track);
+    }
+
+    // Function to render recommended songs
+    function renderRecommendedSongs() {
+        const recommendationGroups = elements.recommendationGroups;
+        const artistRecommendations = elements.artistRecommendations;
+        const emptyRecommendations = elements.emptyRecommendations;
+        
+        // Clear current content
+        recommendationGroups.innerHTML = '';
+        artistRecommendations.innerHTML = '';
+        
+        // Check if we have enough history
+        if (playerState.playHistory.length < 3) {
+            emptyRecommendations.style.display = 'flex';
+            return;
+        }
+        
+        // Hide empty state
+        emptyRecommendations.style.display = 'none';
+        
+        // Get recent tracks for recommendations (last 10)
+        const recentTracks = playerState.playHistory.slice(0, 10);
+        
+        // Take 3 random tracks from recent history to base recommendations on
+        const sourceTrack1 = recentTracks[Math.floor(Math.random() * Math.min(3, recentTracks.length))];
+        const sourceTrack2 = recentTracks[Math.floor(Math.random() * Math.min(5, recentTracks.length))];
+        const sourceTrack3 = recentTracks[Math.floor(Math.random() * recentTracks.length)];
+        
+        // Create recommendation groups
+        const sources = [sourceTrack1, sourceTrack2, sourceTrack3];
+        
+        // Filter out duplicates
+        const uniqueSources = sources.filter((track, index, self) => 
+            index === self.findIndex(t => t.id === track.id)
+        );
+        
+        // Create recommendation groups for each source
+        uniqueSources.forEach(source => {
+            const recommendations = generateRecommendations(source);
+            
+            if (recommendations.length > 0) {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'recommendation-group';
+                
+                groupEl.innerHTML = `
+                    <div class="recommendation-source">
+                        <img src="${source.cover}" alt="${source.title}">
+                        <div class="recommendation-source-info">
+                            <h4>${source.title}</h4>
+                            <p>${source.artist}</p>
+                        </div>
+                    </div>
+                    <div class="recommendation-tracks">
+                        ${recommendations.map(track => `
+                            <div class="recommendation-track" data-track-id="${track.id}">
+                                <img src="${track.cover}" alt="${track.title}">
+                                <div class="recommendation-track-info">
+                                    <h5>${track.title}</h5>
+                                    <p>${track.artist}</p>
+                                </div>
+                                <div class="play-icon">
+                                    <i class="bi bi-play-fill"></i>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                recommendationGroups.appendChild(groupEl);
+            }
+        });
+        
+        // Generate similar artists
+        const similarArtists = generateSimilarArtists();
+        
+        // Add similar artists section
+        similarArtists.forEach(artist => {
+            const artistCardEl = document.createElement('div');
+            artistCardEl.className = 'artist-card';
+            
+            artistCardEl.innerHTML = `
+                <img src="${artist.image}" alt="${artist.name}">
+                <h4>${artist.name}</h4>
+                <p>${artist.genre}</p>
+                <button class="btn artist-explore-btn" data-artist="${artist.name}">
+                    Explore
+                </button>
+            `;
+            
+            artistRecommendations.appendChild(artistCardEl);
+        });
+        
+        // Add event listeners to recommendation tracks
+        const recommendationTracks = document.querySelectorAll('.recommendation-track');
+        recommendationTracks.forEach(trackEl => {
+            trackEl.addEventListener('click', function() {
+                const trackId = this.dataset.trackId;
+                const track = findTrackById(trackId);
+                if (track) {
+                    playTrack(track);
+                }
+            });
+        });
+        
+        // Add event listeners to artist explore buttons
+        const exploreButtons = document.querySelectorAll('.artist-explore-btn');
+        exploreButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const artistName = this.dataset.artist;
+                showToast(`Exploring ${artistName}'s music...`, 'info');
+                
+                // Find tracks by this artist
+                const artistTracks = [...tracks, ...playerState.uploadedTracks].filter(
+                    track => track.artist.toLowerCase().includes(artistName.toLowerCase())
+                );
+                
+                if (artistTracks.length > 0) {
+                    // Create a playlist for this artist
+                    const playlist = {
+                        id: 'artist_' + Date.now(),
+                        name: `${artistName}'s Music`,
+                        description: `Music by ${artistName}`,
+                        tracks: artistTracks,
+                        cover: artistTracks[0].cover
+                    };
+                    
+                    // Play the playlist
+                    playPlaylist(playlist);
+                }
+            });
+        });
+    }
+
+    // Helper function to generate recommendations based on a source track
+    function generateRecommendations(sourceTrack) {
+        const allTracks = [...tracks, ...playerState.uploadedTracks];
+        
+        // Get tracks by same artist
+        const sameArtistTracks = allTracks.filter(track => 
+            track.artist === sourceTrack.artist && track.id !== sourceTrack.id
+        );
+        
+        // Get tracks from same genre or album
+        const relatedTracks = allTracks.filter(track => 
+            (track.genre === sourceTrack.genre || track.album === sourceTrack.album) && 
+            track.id !== sourceTrack.id && 
+            track.artist !== sourceTrack.artist
+        );
+        
+        // Combine and shuffle recommendations
+        let recommendations = [...sameArtistTracks, ...relatedTracks];
+        
+        // Filter out recently played tracks (except the source)
+        const recentIds = playerState.playHistory.slice(0, 5).map(t => t.id);
+        recommendations = recommendations.filter(track => 
+            track.id !== sourceTrack.id && !recentIds.includes(track.id)
+        );
+        
+        // Shuffle the array
+        recommendations.sort(() => Math.random() - 0.5);
+        
+        // Return at most 4 recommendations
+        return recommendations.slice(0, 4);
+    }
+
+    // Helper function to generate similar artists
+    function generateSimilarArtists() {
+        // Get artists from play history
+        const historyArtists = playerState.playHistory
+            .map(track => track.artist)
+            .filter((artist, index, self) => self.indexOf(artist) === index);
+        
+        // Get artists from all tracks
+        const allArtists = [...tracks, ...playerState.uploadedTracks]
+            .map(track => ({
+                name: track.artist,
+                image: track.cover,
+                genre: track.genre || 'Unknown Genre'
+            }))
+            .filter((artist, index, self) => 
+                index === self.findIndex(a => a.name === artist.name) && 
+                !historyArtists.includes(artist.name)
+            );
+        
+        // Shuffle and take 6 artists
+        allArtists.sort(() => Math.random() - 0.5);
+        return allArtists.slice(0, 6);
     }
 
     // Start the player
