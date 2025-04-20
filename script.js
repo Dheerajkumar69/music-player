@@ -741,16 +741,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             tabIndex = 0; // Discover tab
                             break;
                         case 'Last Played':
-                            tabIndex = 1; // My Library tab
+                            tabIndex = -1; // Unlinked
                             break;
                         case 'Recommended':
-                            tabIndex = 2; // Radio tab
+                            tabIndex = -1; // Unlinked
                             break;
                         case 'My Uploads':
-                            tabIndex = 3; // Upload tab
+                            tabIndex = 1; // My Library tab (previously Last Played)
                             break;
                         case 'My Playlists':
-                            tabIndex = 4; // Playlists tab
+                            tabIndex = 2; // Radio tab (previously Recommended)
                             break;
                     }
                     
@@ -935,10 +935,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Properly map sidebar items to top tabs
         const sidebarToTabMap = {
             'Playlist': tabNames.indexOf('Discover'),
-            'Last Played': tabNames.indexOf('My Library'),
-            'Recommended': tabNames.indexOf('Radio'),
-            'My Uploads': tabNames.indexOf('Upload'),
-            'My Playlists': tabNames.indexOf('Playlists')
+            'Last Played': -1, // Unlink Last Played (no matching tab)
+            'Recommended': -1, // Unlink Recommended (no matching tab)
+            'My Uploads': tabNames.indexOf('My Library'), // Transfer Last Played page to My Uploads
+            'My Playlists': tabNames.indexOf('Radio') // Transfer Recommended page to My Playlists
         };
         
         console.log('Sidebar to tab map:', sidebarToTabMap); // Debug
