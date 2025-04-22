@@ -764,6 +764,23 @@ body {
   transform: translate(-50%, -50%) scale(1);
 }
 
+/* Cache status indicator */
+.cache-status {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-top: 5px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--text-light);
+}
+
+.cache-status i {
+  margin-right: 4px;
+  font-size: 11px;
+  color: var(--accent-color);
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .album-info h2 {
@@ -1677,7 +1694,7 @@ body {
 }
 
 .storage-meter-container {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .storage-meter {
@@ -1685,14 +1702,14 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .storage-used {
   height: 100%;
   background-color: var(--accent-color);
   border-radius: 4px;
-  width: 0;
+  width: 0%;
   transition: width 0.5s ease;
 }
 
@@ -1700,6 +1717,75 @@ body {
   font-size: 12px;
   color: var(--text-light);
   text-align: right;
+}
+
+/* Cache button styles */
+.upload-item-actions .cache-btn {
+  transition: color var(--transition-speed) ease;
+}
+
+.upload-item-actions .cache-btn:hover {
+  color: var(--accent-color);
+}
+
+.upload-item-actions .cache-btn.cached {
+  color: var(--accent-color);
+}
+
+/* Storage management */
+.storage-management {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.storage-management h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.storage-management p {
+  color: var(--text-light);
+  margin-bottom: 10px;
+}
+
+.storage-management ul {
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.storage-management li {
+  color: var(--text-light);
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.storage-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.storage-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 15px;
+  font-size: 14px;
+}
+
+.storage-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.storage-btn.danger {
+  background-color: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.storage-btn.danger:hover {
+  background-color: rgba(248, 113, 113, 0.3);
 }
 
 .upload-info {

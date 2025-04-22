@@ -8,6 +8,232 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Music Player App - Full Implementation
 
+// Add styles for playlist detail page
+document.addEventListener('DOMContentLoaded', () => {
+    // Add styles for playlist detail page if not already added
+    if (!document.getElementById('playlist-detail-styles')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'playlist-detail-styles';
+        styleEl.textContent = `
+            .playlist-detail-page {
+                padding: 20px;
+                display: none;
+            }
+            
+            .playlist-detail-page.active {
+                display: block;
+            }
+            
+            .playlist-detail-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .playlist-detail-header img {
+                width: 180px;
+                height: 180px;
+                object-fit: cover;
+                border-radius: 8px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+                margin-right: 30px;
+            }
+            
+            .playlist-detail-info {
+                flex: 1;
+            }
+            
+            .playlist-detail-info h2 {
+                font-size: 32px;
+                margin-bottom: 10px;
+                color: var(--text-white);
+            }
+            
+            .playlist-detail-info p {
+                color: var(--text-light);
+                margin-bottom: 15px;
+            }
+            
+            .playlist-stats {
+                color: var(--text-light);
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+            
+            .playlist-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            
+            .playlist-actions .btn {
+                background-color: var(--accent-color);
+                color: var(--background-dark);
+                border: none;
+                padding: 10px 20px;
+                border-radius: 30px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .playlist-actions .btn:hover {
+                transform: scale(1.05);
+                background-color: var(--accent-hover);
+            }
+            
+            .playlist-actions .shuffle-btn {
+                background-color: transparent;
+                color: var(--text-white);
+                border: 1px solid var(--text-light);
+            }
+            
+            .playlist-actions .shuffle-btn:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .playlist-actions .back-btn {
+                background-color: transparent;
+                color: var(--text-white);
+                border: 1px solid var(--text-light);
+            }
+            
+            .playlist-actions .back-btn:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .playlist-songs-container {
+                margin-top: 20px;
+            }
+            
+            .playlist-songs-header {
+                display: grid;
+                grid-template-columns: 40px 3fr 2fr 2fr 1fr 100px;
+                padding: 0 15px 10px 15px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                color: var(--text-light);
+                font-size: 14px;
+                font-weight: 500;
+            }
+            
+            .playlist-songs-list {
+                margin-top: 10px;
+            }
+            
+            .playlist-song-item {
+                display: grid;
+                grid-template-columns: 40px 3fr 2fr 2fr 1fr 100px;
+                align-items: center;
+                padding: 12px 15px;
+                border-radius: 8px;
+                transition: background-color 0.2s ease;
+            }
+            
+            .playlist-song-item:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            .playlist-song-item .track-info {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .playlist-song-item .track-info img {
+                width: 40px;
+                height: 40px;
+                object-fit: cover;
+                border-radius: 4px;
+            }
+            
+            .playlist-song-item .track-title {
+                font-weight: 500;
+                color: var(--text-white);
+            }
+            
+            .playlist-song-item .track-artist,
+            .playlist-song-item .track-album {
+                color: var(--text-light);
+                font-size: 14px;
+            }
+            
+            .playlist-song-item .track-duration {
+                color: var(--text-light);
+                font-size: 14px;
+            }
+            
+            .playlist-song-item .track-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            
+            .playlist-song-item:hover .track-actions {
+                opacity: 1;
+            }
+            
+            .playlist-song-item .track-actions button {
+                background: transparent;
+                border: none;
+                color: var(--text-white);
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+            
+            .playlist-song-item .track-actions button:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                transform: scale(1.1);
+            }
+            
+            .empty-playlist {
+                text-align: center;
+                padding: 40px 0;
+                color: var(--text-light);
+                font-size: 16px;
+            }
+            
+            /* System playlist card styling */
+            .system-playlist .playlist-card-img {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .system-playlist .playlist-card-img::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, var(--accent-color), var(--background-light));
+                opacity: 0.4;
+                z-index: 1;
+            }
+            
+            .system-playlist .playlist-card-img img {
+                z-index: 0;
+            }
+            
+            .system-playlist .playlist-card-info h4 {
+                color: var(--accent-color);
+            }
+        `;
+        document.head.appendChild(styleEl);
+    }
+});
+
 // Sample track data - in a real app this would come from an API
 const tracks = [
     {
@@ -56,6 +282,233 @@ const tracks = [
         audio: "audio/raabta.mp3"
     }
 ];
+// IndexedDB Manager for storing audio tracks
+const indexedDBManager = {
+    db: null,
+
+    async initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open("MusicPlayerDB", 1);
+
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains("tracks")) {
+                    const store = db.createObjectStore("tracks", { keyPath: "id" });
+                    store.createIndex("title", "title", { unique: false });
+                }
+            };
+
+            request.onsuccess = (event) => {
+                this.db = event.target.result;
+                resolve(this.db);
+            };
+
+            request.onerror = (event) => {
+                console.error("IndexedDB error:", event.target.error);
+                reject(event.target.error);
+            };
+        });
+    },
+
+    async saveTrack(track, blob) {
+        await this.initDB();
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction("tracks", "readwrite");
+            const store = tx.objectStore("tracks");
+
+            const record = {
+                ...track,
+                blob,
+                cachedAt: new Date().toISOString()
+            };
+
+            const request = store.put(record);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(false);
+        });
+    },
+
+    async getTrack(id) {
+        await this.initDB();
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction("tracks", "readonly");
+            const store = tx.objectStore("tracks");
+            const request = store.get(id);
+
+            request.onsuccess = (event) => {
+                const result = event.target.result;
+                if (result && result.blob) {
+                    const blobUrl = URL.createObjectURL(result.blob);
+                    // Return the full track object with the blobUrl as the audio property
+                    resolve({
+                        ...result,
+                        audio: blobUrl
+                    });
+                } else {
+                    resolve(null);
+                }
+            };
+
+            request.onerror = () => reject(null);
+        });
+    },
+
+    async deleteTrack(id) {
+        await this.initDB();
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction("tracks", "readwrite");
+            const store = tx.objectStore("tracks");
+            const request = store.delete(id);
+
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(false);
+        });
+    },
+
+    async getAllTracks() {
+        await this.initDB();
+        return new Promise((resolve) => {
+            try {
+                const tx = this.db.transaction("tracks", "readonly");
+                const store = tx.objectStore("tracks");
+                const request = store.getAll();
+
+                request.onsuccess = async (event) => {
+                    try {
+                        const result = event.target.result || [];
+                        console.log(`Retrieved ${result.length} tracks from IndexedDB`);
+                        
+                        const tracks = await Promise.all(
+                            result.map(track => {
+                                try {
+                                    // Check if blob exists and is valid
+                                    if (track.blob && track.blob instanceof Blob) {
+                                        const blobUrl = URL.createObjectURL(track.blob);
+                                        return {
+                                            ...track,
+                                            audio: blobUrl
+                                        };
+                                    } else {
+                                        console.warn(`Track ${track.id} (${track.title}) has invalid blob`);
+                                        return track; // Return track without audio URL
+                                    }
+                                } catch (error) {
+                                    console.error(`Error processing track ${track.id}:`, error);
+                                    return track; // Return track without modifications
+                                }
+                            })
+                        );
+                        resolve(tracks);
+                    } catch (error) {
+                        console.error("Error processing tracks from IndexedDB:", error);
+                        resolve([]);
+                    }
+                };
+
+                request.onerror = (error) => {
+                    console.error("Error retrieving tracks from IndexedDB:", error);
+                    resolve([]);
+                };
+            } catch (error) {
+                console.error("Transaction error in getAllTracks:", error);
+                resolve([]);
+            }
+        });
+    }
+};
+
+// Load all saved tracks from IndexedDB on startup
+async function loadSavedIndexedDBTracks() {
+    try {
+        // Initialize IndexedDB first
+        await indexedDBManager.initDB();
+        console.log("IndexedDB initialized successfully");
+        
+        const savedTracks = await indexedDBManager.getAllTracks();
+        console.log(`Found ${savedTracks.length} tracks in IndexedDB`);
+        
+        if (savedTracks && savedTracks.length > 0) {
+            // Add tracks to the playerState
+            savedTracks.forEach(track => {
+                // Check if this track already exists in uploadedTracks by id
+                const exists = playerState.uploadedTracks.some(t => t.id === track.id);
+                if (!exists) {
+                    console.log(`Adding track to player: ${track.title}`);
+                    playerState.uploadedTracks.push(track);
+                    
+                    // Add to UI
+                    addUploadItem(track, false);
+                }
+            });
+            
+            // Update UI
+            updateSelectableSongs();
+        }
+        
+        // Update storage info
+        setTimeout(() => {
+            updateStorageDisplay();
+        }, 500);
+    } catch (error) {
+        console.error("Error loading tracks from IndexedDB:", error);
+        showToast("Failed to load your music library", "error");
+    }
+}
+
+// Auto-cache uploaded songs to IndexedDB after upload
+if (document.getElementById('file-upload')) {
+    document.getElementById('file-upload').addEventListener('change', async function (e) {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+            const objectUrl = URL.createObjectURL(file);
+
+            const trackId = Date.now() + Math.floor(Math.random() * 1000);
+            const uploadedTrack = {
+                id: trackId,
+                title: file.name.replace(/\.[^/.]+$/, ''),
+                artist: 'Unknown Artist',
+                album: 'My Uploads',
+                duration: 0,
+                cover: '',
+                audio: objectUrl,
+            };
+
+            playerState.uploadedTracks.push(uploadedTrack);
+            addUploadItem(uploadedTrack, true);
+
+            try {
+                const blob = await file.slice();
+                const success = await indexedDBManager.saveTrack(uploadedTrack, blob);
+                if (!success) {
+                    showToast(`Failed to save "${uploadedTrack.title}" in IndexedDB`, 'error');
+                }
+            } catch (err) {
+                console.error('IndexedDB save error:', err);
+                showToast(`Error saving "${uploadedTrack.title}"`, 'error');
+            }
+        }
+
+        saveToLocalStorage();
+        updateSelectableSongs();
+        updateStorageDisplay();
+    });
+}
+
+// Add compatibility function for any code that might still reference renderUploadItem
+function renderUploadItem(track, isLoading = false) {
+    return addUploadItem(track, isLoading);
+}
+
+// Call load on DOMContentLoaded or wherever app initializes
+function init() {
+    // Existing setup...
+    loadSavedIndexedDBTracks(); // 👈 Add here
+}
+
+
+// Continue with the rest of your original script.js content here...
+// Continue with the rest of your original script.js content here...
+
 
 // Trending and new release albums
 const trendingAlbums = [
@@ -89,11 +542,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTrackIndex: 0,
         // New state properties
         uploadedTracks: [],
+        
         customPlaylists: [],
         likedSongs: [], // Store liked songs
         playHistory: [], // Store listening history
         lastPlayedLimit: 50, // Maximum number of tracks to keep in history
         currentTrackRecorded: false,
+        cachedTracks: [], // Store information about cached tracks
     };
 
     // Cache DOM elements
@@ -215,9 +670,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 
+                // Clear cache storage
+                this.clearCacheStorage();
+                
                 // Reset state
                 playerState.uploadedTracks = [];
                 playerState.customPlaylists = [];
+                playerState.cachedTracks = [];
                 
                 // Clear UI
                 elements.uploadItemsList.innerHTML = '';
@@ -226,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Update UI
                 updateSelectableSongs();
+                updateStorageDisplay();
                 
                 showToast('All locally stored music and playlists have been cleared', 'info');
             }
@@ -238,8 +698,235 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Approximate size in bytes (2 bytes per character for UTF-16)
             return data.length * 2;
+        },
+        
+        // Cache Storage Management
+        
+        // Initialize cache storage
+        initCacheStorage: async function() {
+            try {
+                const cache = await caches.open('music-player-cache');
+                return cache;
+            } catch (e) {
+                console.error('Error initializing cache storage:', e);
+                showToast('Error initializing cache storage', 'error');
+                return null;
+            }
+        },
+        
+        // Store a track in cache
+        cacheTrack: async function(track) {
+            try {
+                // Convert data URL to blob
+                const response = await fetch(track.audio);
+                const blob = await response.blob();
+                
+                // Create a new object URL from the blob
+                const objectUrl = URL.createObjectURL(blob);
+                
+                // Store the original track info
+                const trackInfo = {
+                    id: track.id,
+                    title: track.title,
+                    artist: track.artist,
+                    album: track.album || 'Unknown Album',
+                    duration: track.duration,
+                    cover: track.cover,
+                    cachedAt: new Date().toISOString(),
+                    size: blob.size
+                };
+                
+                // Store track info in localStorage
+                playerState.cachedTracks = playerState.cachedTracks || [];
+                playerState.cachedTracks.push(trackInfo);
+                saveToLocalStorage();
+                
+                // Store audio blob in cache storage
+                const cache = await this.initCacheStorage();
+                if (cache) {
+                    const audioUrl = `/cached-audio/${track.id}`;
+                    await cache.put(audioUrl, new Response(blob));
+                    
+                    // Update UI to show cached status
+                    updateCacheStatus(track.id, true);
+                    updateStorageDisplay();
+                    
+                    showToast(`"${track.title}" has been cached for offline use`, 'success');
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                console.error('Error caching track:', e);
+                showToast('Error caching track', 'error');
+                return false;
+            }
+        },
+        
+        // Get a cached track
+        getCachedTrack: async function(trackId) {
+            try {
+                const cache = await this.initCacheStorage();
+                if (!cache) return null;
+                
+                const audioUrl = `/cached-audio/${trackId}`;
+                const response = await cache.match(audioUrl);
+                
+                if (response) {
+                    const blob = await response.blob();
+                    return URL.createObjectURL(blob);
+                }
+                return null;
+            } catch (e) {
+                console.error('Error getting cached track:', e);
+                return null;
+            }
+        },
+        
+        // Remove a track from cache
+        removeCachedTrack: async function(trackId) {
+            try {
+                const cache = await this.initCacheStorage();
+                if (!cache) return false;
+                
+                const audioUrl = `/cached-audio/${trackId}`;
+                await cache.delete(audioUrl);
+                
+                // Update cached tracks list
+                playerState.cachedTracks = playerState.cachedTracks.filter(t => t.id !== trackId);
+                saveToLocalStorage();
+                
+                // Update UI
+                updateCacheStatus(trackId, false);
+                updateStorageDisplay();
+                
+                showToast(`Track removed from cache`, 'info');
+                return true;
+            } catch (e) {
+                console.error('Error removing cached track:', e);
+                return false;
+            }
+        },
+        
+        // Check if a track is cached
+        isTrackCached: async function(trackId) {
+            try {
+                const cache = await this.initCacheStorage();
+                if (!cache) return false;
+                
+                const audioUrl = `/cached-audio/${trackId}`;
+                const response = await cache.match(audioUrl);
+                
+                return !!response;
+            } catch (e) {
+                console.error('Error checking cached track:', e);
+                return false;
+            }
+        },
+        
+        // Get all cached tracks info
+        getCachedTracksInfo: function() {
+            return playerState.cachedTracks || [];
+        },
+        
+        // Get total cache size
+        getCacheSize: function() {
+            const cachedTracks = playerState.cachedTracks || [];
+            return cachedTracks.reduce((total, track) => total + (track.size || 0), 0);
+        },
+        
+        // Clear all cache storage
+        clearCacheStorage: async function() {
+            try {
+                await caches.delete('music-player-cache');
+                playerState.cachedTracks = [];
+                saveToLocalStorage();
+                updateStorageDisplay();
+                return true;
+            } catch (e) {
+                console.error('Error clearing cache storage:', e);
+                return false;
+            }
         }
     };
+    
+    // Update the storage display in the UI
+    async function updateStorageDisplay() {
+        console.log("Updating storage display...");
+        
+        try {
+            const storageUsed = document.getElementById('storage-used');
+            const storageInfo = document.getElementById('storage-info');
+            
+            // If elements aren't available yet, retry after a delay
+            if (!storageUsed || !storageInfo) {
+                console.warn("Storage display elements not found, retrying in 1 second...");
+                setTimeout(updateStorageDisplay, 1000);
+                return;
+            }
+            
+            // Get storage quota
+            const quota = await storageManager.checkStorageQuota();
+            
+            // Get IndexedDB tracks to calculate size
+            const tracks = await indexedDBManager.getAllTracks();
+            const indexedDBSize = tracks ? tracks.reduce((total, track) => {
+                return total + (track.blob ? track.blob.size : 0);
+            }, 0) : 0;
+            
+            // Get cache size
+            const cacheSize = storageManager.getCacheSize() || 0;
+            const totalSize = indexedDBSize + cacheSize;
+            const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            
+            if (quota) {
+                const usedMB = (quota.usedBytes / (1024 * 1024)).toFixed(2);
+                const totalMB = (quota.totalBytes / (1024 * 1024)).toFixed(2);
+                
+                storageUsed.style.width = `${quota.usedPercentage}%`;
+                storageInfo.textContent = `${usedMB} MB used of ${totalMB} MB (${totalSizeMB} MB in music storage)`;
+                
+                // Add color based on usage
+                if (quota.usedPercentage > 80) {
+                    storageUsed.style.backgroundColor = 'var(--error-color, #e25d5d)';
+                } else if (quota.usedPercentage > 60) {
+                    storageUsed.style.backgroundColor = 'var(--warning-color, #e2b55d)';
+                } else {
+                    storageUsed.style.backgroundColor = 'var(--accent-color, #5d87e2)';
+                }
+            } else {
+                // If quota is not available, show just the music storage size
+                storageUsed.style.width = '30%'; // Default width
+                storageInfo.textContent = `${totalSizeMB} MB used in music storage`;
+                storageUsed.style.backgroundColor = 'var(--accent-color, #5d87e2)';
+            }
+            
+            console.log("Storage display updated successfully");
+        } catch (error) {
+            console.error("Error updating storage display:", error);
+        }
+    }
+    
+    // Update cache status indicator for a track
+    function updateCacheStatus(trackId, isCached) {
+        const item = document.querySelector(`.upload-item[data-id="${trackId}"]`);
+        if (!item) return;
+        
+        // Remove existing cache status
+        const existingStatus = item.querySelector('.cache-status');
+        if (existingStatus) {
+            existingStatus.remove();
+        }
+        
+        // Add new cache status if cached
+        if (isCached) {
+            const cacheStatus = document.createElement('div');
+            cacheStatus.className = 'cache-status';
+            cacheStatus.innerHTML = '<i class="bi bi-hdd-fill"></i> Cached';
+            
+            const infoElement = item.querySelector('.upload-item-info');
+            infoElement.appendChild(cacheStatus);
+        }
+    }
 
     // Initialize the player
     function initPlayer() {
@@ -282,8 +969,13 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.nowPlayingTitle.textContent = playerState.currentTrack.title;
         elements.nowPlayingArtist.textContent = playerState.currentTrack.artist;
         
-        // Update the total time display
-        updateTotalTimeDisplay();
+        // Reset progress bar until we have metadata
+        elements.progressBar.style.width = '0%';
+        elements.progressCircle.style.left = '0%';
+        elements.currentTimeEl.textContent = '0:00';
+        
+        // Show loading in duration display until we get the metadata
+        elements.totalTimeEl.textContent = '--:--';
         
         // Highlight the current track in the playlist
         updatePlaylistHighlight();
@@ -355,11 +1047,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentTime = playerState.audioElement.currentTime;
         elements.currentTimeEl.textContent = formatTime(currentTime);
         
-        const duration = playerState.currentTrack ? playerState.currentTrack.duration : 0;
-        const progressPercent = (currentTime / duration) * 100;
+        // Use the audio element's duration if available, otherwise fall back to track duration
+        const duration = playerState.audioElement.duration || (playerState.currentTrack ? playerState.currentTrack.duration : 0);
         
-        elements.progressBar.style.width = `${progressPercent}%`;
-        elements.progressCircle.style.left = `${progressPercent}%`;
+        // Only update if we have a valid duration to avoid NaN
+        if (duration) {
+            const progressPercent = (currentTime / duration) * 100;
+            elements.progressBar.style.width = `${progressPercent}%`;
+            elements.progressCircle.style.left = `${progressPercent}%`;
+        }
     }
 
     // Update which track is highlighted in the playlist
@@ -491,6 +1187,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 playNext();
             }
         });
+        
+        // When metadata is loaded (e.g. duration)
+        playerState.audioElement.addEventListener('loadedmetadata', function() {
+            // If the track's duration isn't set or doesn't match the actual audio duration, update it
+            if (!playerState.currentTrack.duration || Math.abs(playerState.currentTrack.duration - playerState.audioElement.duration) > 1) {
+                console.log(`Updating duration for ${playerState.currentTrack.title} from ${playerState.currentTrack.duration} to ${playerState.audioElement.duration}`);
+                playerState.currentTrack.duration = playerState.audioElement.duration;
+            }
+            
+            // Update the total time display
+            updateTotalTimeDisplay();
+            
+            // Update the current time display and progress bar
+            updateTimeDisplay();
+        });
+        
+        // Handle errors
+        playerState.audioElement.addEventListener('error', function(e) {
+            console.error('Audio element error:', e);
+            showToast('Error loading audio track', 'error');
+        });
     }
 
     // Set up event listeners for player controls
@@ -564,11 +1281,15 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.progressContainer.addEventListener('mousedown', function(e) {
             e.preventDefault(); // Prevent text selection during drag
             
+            // Ensure we have a track loaded
+            if (!playerState.currentTrack) return;
+            
             // Start tracking mouse movement for dragging
             const handleDrag = function(e) {
                 const width = elements.progressContainer.clientWidth;
                 const clickX = Math.min(Math.max(0, e.clientX - elements.progressContainer.getBoundingClientRect().left), width);
-                const duration = playerState.currentTrack.duration;
+                // Use the audio element's duration if available, otherwise fall back to track duration
+                const duration = playerState.audioElement.duration || playerState.currentTrack.duration;
                 const percentage = clickX / width;
                 
                 // Update UI
@@ -593,7 +1314,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const width = elements.progressContainer.clientWidth;
                 const clickX = Math.min(Math.max(0, e.clientX - elements.progressContainer.getBoundingClientRect().left), width);
-                const duration = playerState.currentTrack.duration;
+                // Use the audio element's duration if available, otherwise fall back to track duration
+                const duration = playerState.audioElement.duration || playerState.currentTrack.duration;
                 
                 // Set the new time
                 playerState.audioElement.currentTime = (clickX / width) * duration;
@@ -744,14 +1466,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Found tab index for ${menuText}: ${tabIndex}`); // Debug
                     
                     if (tabIndex !== -1) {
-                        // Directly set active classes on tabs and content pages
-                        elements.tabItems.forEach((t, i) => {
-                            t.classList.toggle('active', i === tabIndex);
-                        });
-                        
-                        elements.contentPages.forEach((p, i) => {
-                            p.classList.toggle('active', i === tabIndex);
-                        });
+                        // Call showTab function to handle tab switching
+                        showTab(tabIndex, true);
                     }
                 } else {
                     console.warn(`No mapping found for sidebar item: ${menuText}`); // Debug
@@ -760,14 +1476,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     let tabIndex = -1;
                     
                     switch (menuText) {
+                        case 'Dashboard':
+                            tabIndex = 0; // Discover tab
+                            break;
                         case 'Playlist':
                             tabIndex = 0; // Discover tab
                             break;
                         case 'Last Played':
-                            tabIndex = 3; // Unlinked
+                            tabIndex = 3; // Last Played tab
                             break;
                         case 'Recommended':
-                            tabIndex = 4; // Unlinked
+                            tabIndex = 4; // Recommended tab
                             break;
                         case 'My Uploads':
                             tabIndex = 1; // My Library tab
@@ -778,14 +1497,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     if (tabIndex !== -1) {
-                        // Directly set active classes on tabs and content pages
-                        elements.tabItems.forEach((t, i) => {
-                            t.classList.toggle('active', i === tabIndex);
-                        });
-                        
-                        elements.contentPages.forEach((p, i) => {
-                            p.classList.toggle('active', i === tabIndex);
-                        });
+                        // Call showTab function to handle tab switching
+                        showTab(tabIndex, true);
                     }
                 }
                 
@@ -980,6 +1693,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabNames = Array.from(elements.tabItems).map(tab => tab.textContent.trim());
         console.log('Tab names:', tabNames); // Debug
         
+        // Find the library tab and uploads tab index
+        const libraryTabIndex = tabNames.indexOf('My Library');
+        const playlistsTabIndex = tabNames.indexOf('Radio'); // Playlists are usually in the Radio tab
+        
         // Count all content pages to identify last-played and recommended indices
         const contentPageCount = elements.contentPages.length;
         // Last-played and recommended pages are typically the last two pages
@@ -987,20 +1704,54 @@ document.addEventListener('DOMContentLoaded', () => {
         const recommendedIndex = Array.from(elements.contentPages).findIndex(page => page.classList.contains('recommended-page'));
         
         console.log('Last played index:', lastPlayedIndex, 'Recommended index:', recommendedIndex); // Debug
+        console.log('Library tab index:', libraryTabIndex, 'Playlists tab index:', playlistsTabIndex); // Debug
         
         // Properly map sidebar items to top tabs
         const sidebarToTabMap = {
-            'Playlist': tabNames.indexOf('Discover'),
+            'Dashboard': tabNames.indexOf('Discover') >= 0 ? tabNames.indexOf('Discover') : 0, // Map Dashboard to Discover tab
+            'Playlist': tabNames.indexOf('Discover') >= 0 ? tabNames.indexOf('Discover') : 0,
             'Last Played': lastPlayedIndex, // Map to Last Played page
             'Recommended': recommendedIndex, // Map to Recommended page
-            'My Uploads': tabNames.indexOf('My Library'), // Connect to My Library tab
-            'My Playlists': tabNames.indexOf('Radio') // Connect to Radio tab
+            'My Uploads': libraryTabIndex !== -1 ? libraryTabIndex : 1, // Connect to My Library tab
+            'My Playlists': playlistsTabIndex !== -1 ? playlistsTabIndex : 2 // Connect to Radio tab
         };
         
         console.log('Sidebar to tab map:', sidebarToTabMap); // Debug
         
         // Add global mapping for use in other functions
         window.sidebarToTabMap = sidebarToTabMap;
+        
+        // Set up sidebar menu item click handlers
+        elements.menuItems.forEach((item) => {
+            item.addEventListener('click', function() {
+                // Get the menu item text
+                const menuText = this.querySelector('span').textContent.trim();
+                console.log(`Sidebar item clicked: ${menuText}`); // Debug
+                
+                // Update active state in sidebar
+                elements.menuItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // If this is the My Playlists item, make sure the default playlists exist
+                if (menuText === 'My Playlists') {
+                    // Make sure default playlists exist
+                    createLocalSongsPlaylist(true);
+                    createLikedSongsPlaylist(true);
+                    // Make sure playlists are rendered
+                    renderPlaylists();
+                } else if (menuText === 'My Uploads') {
+                    // Make sure uploaded tracks are rendered and Local Songs playlist exists
+                    renderUploadedTracks();
+                    createLocalSongsPlaylist(true);
+                }
+                
+                // Use the mapping to find the correct tab to show
+                if (window.sidebarToTabMap && window.sidebarToTabMap[menuText] !== undefined) {
+                    const tabIndex = window.sidebarToTabMap[menuText];
+                    showTab(tabIndex, true);
+                }
+            });
+        });
         
         // Rest of the function remains the same
         // Setup tab click handlers
@@ -1026,8 +1777,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 
-                // Update sidebar selection to match
+                // Check if this is the playlists tab and render playlists if needed
                 const tabName = tab.textContent.trim();
+                if (tabName === 'Radio' || tabName === 'Playlists') {
+                    renderPlaylists();
+                }
+                
+                // Update sidebar selection to match
                 let sidebarItemToActivate = null;
                 
                 // Find corresponding sidebar item
@@ -1148,65 +1904,72 @@ document.addEventListener('DOMContentLoaded', () => {
             fileName: fileName,
             fileType: file.type,
             fileSize: file.size,
-            dateAdded: new Date().toISOString()
+            dateAdded: new Date().toISOString(),
+            source: 'user-upload'
         };
         
-        // Add loading placeholder
+        // Add loading placeholder to UI
         addUploadItem(newTrack, true);
+        console.log(`Added loading placeholder for track: ${newTrack.title}`);
         
-        // Convert file to base64 for storage
-        const reader = new FileReader();
+        // Create a file reader to process the file
+        const tempAudio = new Audio();
         
-        reader.onload = function(e) {
-            // Get base64 data
-            const base64Audio = e.target.result;
-            
-            // Store base64 data to track object for persistence
-            newTrack.audioData = base64Audio;
-            
-            // Load the audio to get its duration
-            const tempAudio = new Audio(audioUrl);
-            tempAudio.addEventListener('loadedmetadata', function() {
+        // Handle audio load to get duration
+        tempAudio.addEventListener('loadedmetadata', async function() {
+            try {
+                // Update track with proper duration
                 newTrack.duration = tempAudio.duration;
+                console.log(`Got duration for track: ${newTrack.title} - ${newTrack.duration}s`);
                 
-                // Add to uploaded tracks
-                playerState.uploadedTracks.push(newTrack);
-                
-                // Update the UI (replace the loading placeholder)
-                addUploadItem(newTrack, false);
-                
-                // Update all songs list for playlist creation
-                updateSelectableSongs();
-                
-                // Save to localStorage
-                saveToLocalStorage();
-                
-                showToast(`"${newTrack.title}" added to your library`, 'success');
-            });
-            
-            tempAudio.addEventListener('error', function() {
-                showToast('Error loading audio file', 'error');
-                
-                // Remove the loading placeholder
-                const loadingItem = document.querySelector(`.upload-item[data-id="${trackId}"]`);
-                if (loadingItem) {
-                    loadingItem.remove();
+                // Save to IndexedDB - this needs to happen before we push to playerState
+                try {
+                    console.log(`Saving track to IndexedDB: ${newTrack.title}`);
+                    const blob = await file.slice(0);
+                    const success = await indexedDBManager.saveTrack(newTrack, blob);
+                    
+                    if (success) {
+                        console.log(`Successfully saved track to IndexedDB: ${newTrack.title}`);
+                        // Now add to playerState and update UI
+                        playerState.uploadedTracks.push(newTrack);
+                        addUploadItem(newTrack, false);
+                        
+                        // Update all related UI components
+                        updateSelectableSongs();
+                        saveToLocalStorage();
+                        updateStorageDisplay();
+                        
+                        showToast(`"${newTrack.title}" added to your library`, 'success');
+                    } else {
+                        console.error(`Failed to save track to IndexedDB: ${newTrack.title}`);
+                        showToast(`Failed to save "${newTrack.title}" to your library`, 'error');
+                    }
+                } catch (err) {
+                    console.error('IndexedDB save error:', err);
+                    showToast(`Error saving "${newTrack.title}" - ${err.message}`, 'error');
                 }
-            });
-        };
-        
-        reader.onerror = function() {
-            showToast('Error reading audio file', 'error');
-            
-            // Remove the loading placeholder
-            const loadingItem = document.querySelector(`.upload-item[data-id="${trackId}"]`);
-            if (loadingItem) {
-                loadingItem.remove();
+            } catch (loadError) {
+                console.error('Error processing audio file:', loadError);
+                showToast(`Error processing "${newTrack.title}"`, 'error');
+                
+                // Remove loading placeholder if there was an error
+                const loadingItem = document.querySelector(`.upload-item[data-id="${newTrack.id}"]`);
+                if (loadingItem) loadingItem.remove();
             }
-        };
+        });
         
-        // Start reading the file as data URL (base64)
-        reader.readAsDataURL(file);
+        // Handle load errors
+        tempAudio.addEventListener('error', function(e) {
+            console.error('Error loading audio file:', e);
+            showToast(`Error loading "${title}" - ${e.message || 'Unknown error'}`, 'error');
+            
+            // Remove loading placeholder
+            const loadingItem = document.querySelector(`.upload-item[data-id="${newTrack.id}"]`);
+            if (loadingItem) loadingItem.remove();
+        });
+        
+        // Start loading the audio to get metadata
+        tempAudio.src = audioUrl;
     }
     
     // Add upload item to the list
@@ -1247,6 +2010,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="upload-item-actions">
                     <button class="play-btn" title="Play"><i class="bi bi-play-fill"></i></button>
                     <button class="edit-btn" title="Edit details"><i class="bi bi-pencil"></i></button>
+                    <button class="cache-btn" title="Cache for offline use"><i class="bi bi-hdd"></i></button>
                     <button class="delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
                 </div>
             `;
@@ -1255,6 +2019,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const playBtn = item.querySelector('.play-btn');
                 const editBtn = item.querySelector('.edit-btn');
+                const cacheBtn = item.querySelector('.cache-btn');
                 const deleteBtn = item.querySelector('.delete-btn');
                 
                 playBtn.addEventListener('click', () => {
@@ -1265,13 +2030,66 @@ document.addEventListener('DOMContentLoaded', () => {
                     editTrackDetails(track);
                 });
                 
+                cacheBtn.addEventListener('click', () => {
+                    toggleTrackCache(track);
+                });
+                
                 deleteBtn.addEventListener('click', () => {
                     deleteUploadedTrack(track);
                 });
+                
+                // Check if track is already cached and update UI
+                checkAndUpdateCacheStatus(track.id);
             }, 0);
         }
         
         elements.uploadItemsList.appendChild(item);
+    }
+    
+    // Check if a track is cached and update the UI accordingly
+    async function checkAndUpdateCacheStatus(trackId) {
+        const isCached = await storageManager.isTrackCached(trackId);
+        updateCacheStatus(trackId, isCached);
+        updateCacheButton(trackId, isCached);
+    }
+    
+    // Update the cache button appearance based on cache status
+    function updateCacheButton(trackId, isCached) {
+        const item = document.querySelector(`.upload-item[data-id="${trackId}"]`);
+        if (!item) return;
+        
+        const cacheBtn = item.querySelector('.cache-btn');
+        if (!cacheBtn) return;
+        
+        if (isCached) {
+            cacheBtn.title = 'Remove from cache';
+            cacheBtn.innerHTML = '<i class="bi bi-hdd-fill"></i>';
+            cacheBtn.classList.add('cached');
+        } else {
+            cacheBtn.title = 'Cache for offline use';
+            cacheBtn.innerHTML = '<i class="bi bi-hdd"></i>';
+            cacheBtn.classList.remove('cached');
+        }
+    }
+    
+    // Toggle track caching (cache if not cached, remove from cache if cached)
+    async function toggleTrackCache(track) {
+        const isCached = await storageManager.isTrackCached(track.id);
+        
+        if (isCached) {
+            // Remove from cache
+            const success = await storageManager.removeCachedTrack(track.id);
+            if (success) {
+                showToast(`"${track.title}" removed from cache`, 'info');
+                updateCacheButton(track.id, false);
+            }
+        } else {
+            // Add to cache
+            const success = await storageManager.cacheTrack(track);
+            if (success) {
+                updateCacheButton(track.id, true);
+            }
+        }
     }
     
     // Play an uploaded track
@@ -1566,24 +2384,48 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add a playlist to the sidebar
     function addPlaylistToSidebar(playlist) {
+        // Don't add duplicates
+        const existingItem = document.querySelector(`.playlist-item[data-id="${playlist.id}"]`);
+        if (existingItem) {
+            // Just update the song count
+            existingItem.querySelector('p').textContent = `${playlist.tracks.length} songs`;
+            return;
+        }
+        
         const playlistItem = document.createElement('div');
         playlistItem.className = 'playlist-item';
         playlistItem.setAttribute('data-id', playlist.id);
         
+        // Add special class for system playlists
+        if (playlist.isSystem || playlist.id === 'liked-songs' || playlist.id === 'local-songs') {
+            playlistItem.classList.add('system-playlist');
+        }
+        
         playlistItem.innerHTML = `
-            <img src="${playlist.cover}" alt="${playlist.name}">
+            <img src="${playlist.cover || 'images/playlist-default.jpg'}" alt="${playlist.name}">
             <div class="playlist-item-info">
                 <h4>${playlist.name}</h4>
                 <p>${playlist.tracks.length} songs</p>
             </div>
         `;
         
-        // Add event listener to play playlist
+        // Add event listener to handle playlist click
         playlistItem.addEventListener('click', function() {
-            playPlaylist(playlist);
+            openPlaylistDetail(playlist);
         });
         
-        elements.customPlaylistsList.appendChild(playlistItem);
+        // Add to the appropriate section - system playlists at the top, user playlists below
+        if (playlist.isSystem || playlist.id === 'liked-songs' || playlist.id === 'local-songs') {
+            // Add at the beginning of the playlist list
+            if (elements.customPlaylistsList.firstChild) {
+                elements.customPlaylistsList.insertBefore(playlistItem, elements.customPlaylistsList.firstChild);
+            } else {
+                elements.customPlaylistsList.appendChild(playlistItem);
+            }
+        } else {
+            // Add at the end for user-created playlists
+            elements.customPlaylistsList.appendChild(playlistItem);
+        }
     }
     
     // Add a playlist card to the playlists grid
@@ -1592,9 +2434,17 @@ document.addEventListener('DOMContentLoaded', () => {
         playlistCard.className = 'playlist-card';
         playlistCard.setAttribute('data-id', playlist.id);
         
+        // Add a special class for system playlists
+        if (playlist.id === 'liked-songs' || playlist.id === 'local-songs') {
+            playlistCard.classList.add('system-playlist');
+        }
+        
         playlistCard.innerHTML = `
             <div class="playlist-card-img">
-                <img src="${playlist.cover}" alt="${playlist.name}">
+                <img src="${playlist.cover || 'images/playlist-default.jpg'}" alt="${playlist.name}">
+                <div class="play-overlay">
+                    <i class="bi bi-play-circle-fill"></i>
+                </div>
             </div>
             <div class="playlist-card-info">
                 <h4>${playlist.name}</h4>
@@ -1602,21 +2452,52 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         
-        // Add event listener to play playlist
+        // Add event listener to view playlist details
         playlistCard.addEventListener('click', function() {
-            playPlaylist(playlist);
+            openPlaylistDetail(playlist);
         });
+        
+        // Add a play button that starts playing immediately
+        const playOverlay = playlistCard.querySelector('.play-overlay');
+        if (playOverlay) {
+            playOverlay.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent opening the detail page
+                
+                if (playlist.tracks.length === 0) {
+                    showToast('This playlist is empty', 'warning');
+                    return;
+                }
+                
+                // Update the queue with playlist tracks
+                playerState.queue = [...playlist.tracks];
+                playerState.currentTrackIndex = 0;
+                
+                // Start playing the first track
+                loadTrack(0);
+                togglePlay();
+                
+                showToast(`Playing playlist: ${playlist.name}`, 'success');
+            });
+        }
         
         elements.playlistsGrid.appendChild(playlistCard);
     }
     
     // Play a playlist
     function playPlaylist(playlist) {
+        // Check if playlist is empty
         if (playlist.tracks.length === 0) {
             showToast('This playlist is empty', 'warning');
             return;
         }
         
+        // If it's a system playlist (liked-songs or local-songs), open the detail page
+        if (playlist.id === 'liked-songs' || playlist.id === 'local-songs' || playlist.isCustom) {
+            openPlaylistDetail(playlist);
+            return;
+        }
+        
+        // Otherwise, for regular playlists, play immediately
         // Update the queue with playlist tracks
         playerState.queue = [...playlist.tracks];
         playerState.currentTrackIndex = 0;
@@ -1656,6 +2537,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize all player functionality
     function init() {
+        console.log("Initializing music player...");
+        
+        // Set up basic player functionality
         initPlayer();
         setupAudioEventListeners();
         setupPlayerControls();
@@ -1666,13 +2550,60 @@ document.addEventListener('DOMContentLoaded', () => {
         initTabs();
         initFileUpload();
         initPlaylistCreator();
-        initStorageManagement();
         
-        // Initialize player state
+        // Initialize player state from localStorage first
+        console.log("Loading state from localStorage...");
         playerState.uploadedTracks = loadFromLocalStorage('uploadedTracks') || [];
         playerState.customPlaylists = loadFromLocalStorage('customPlaylists') || [];
         playerState.likedSongs = loadFromLocalStorage('likedSongs') || [];
         playerState.playHistory = loadFromLocalStorage('playHistory') || [];
+        playerState.cachedTracks = loadFromLocalStorage('cachedTracks') || [];
+        
+        // Initialize storage management
+        initStorageManagement();
+        
+        // Create default playlists first - even before IndexedDB loads
+        // This ensures they exist in the UI immediately
+        console.log("Creating default playlists...");
+        createLocalSongsPlaylist(true); // Force creation even if empty
+        createLikedSongsPlaylist(true); // Force creation even if empty
+        
+        // Render uploaded tracks immediately from localStorage
+        renderUploadedTracks();
+        
+        // Render playlists
+        renderPlaylists();
+        
+        // Now load tracks from IndexedDB (more important and should override localStorage)
+        console.log("Loading tracks from IndexedDB...");
+        loadSavedIndexedDBTracks().then(() => {
+            console.log("Finished loading tracks from IndexedDB");
+            
+            // Update default playlists after tracks are loaded
+            createLocalSongsPlaylist();
+            createLikedSongsPlaylist();
+            
+            // Render uploaded tracks again with the IndexedDB data
+            renderUploadedTracks();
+            
+            // Render all playlists to the playlists page
+            renderPlaylists();
+            
+            // Trigger storage check after IndexedDB tracks are loaded
+            setTimeout(() => {
+                console.log("Triggering storage check...");
+                const checkStorageBtn = document.getElementById('check-storage');
+                if (checkStorageBtn) {
+                    checkStorageBtn.click();
+                } else {
+                    console.warn("Check storage button not found, updating storage display directly");
+                    updateStorageDisplay();
+                }
+            }, 1000);
+        }).catch(err => {
+            console.error("Error during IndexedDB track loading:", err);
+            showToast("There was an error loading your music library", "error");
+        });
         
         // Set up audio element
         playerState.audioElement = new Audio();
@@ -1680,7 +2611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add event listener for song end
         playerState.audioElement.addEventListener('ended', function() {
-            playNextTrack();
+            playNext();
         });
         
         // Add event listener for play time tracking
@@ -1700,34 +2631,33 @@ document.addEventListener('DOMContentLoaded', () => {
             playerState.currentTrackRecorded = false;
         });
         
-        // Create liked songs playlist if it doesn't exist
-        updateLikedSongsPlaylist();
-        
         // Load initial view
         renderLastPlayed();
         renderRecommendedSongs();
         
         // Set initial volume
-        elements.volumeSlider.value = playerState.audioElement.volume * 100;
-        
-        // Diagnostic check for page loading
-        if (
-            !elements.uploadContainer || 
-            !elements.libraryContainer || 
-            !elements.playlistsContainer ||
-            !elements.lastPlayedContainer ||
-            !elements.recommendedContainer
-        ) {
-            console.error('Error initializing pages. Some pages might not be properly loaded.');
+        if (elements.volumeSlider) {
+            elements.volumeSlider.value = playerState.audioElement.volume * 100;
         }
+        
+        console.log("Music player initialization complete");
     }
 
     // Save player state to local storage
     function saveToLocalStorage(key, value) {
         try {
-            localStorage.setItem(key, JSON.stringify(value));
+            // If no specific key is provided, save all player state
+            if (!key) {
+                localStorage.setItem('uploadedTracks', JSON.stringify(playerState.uploadedTracks));
+                localStorage.setItem('customPlaylists', JSON.stringify(playerState.customPlaylists));
+                localStorage.setItem('likedSongs', JSON.stringify(playerState.likedSongs));
+                localStorage.setItem('playHistory', JSON.stringify(playerState.playHistory));
+                localStorage.setItem('cachedTracks', JSON.stringify(playerState.cachedTracks));
+            } else {
+                localStorage.setItem(key, JSON.stringify(value));
+            }
         } catch (error) {
-            console.error(`Error saving ${key} to localStorage:`, error);
+            console.error(`Error saving ${key || 'player state'} to localStorage:`, error);
             showToast(`Error saving data: ${error.message}`, 'error');
         }
     }
@@ -1746,64 +2676,145 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize storage management functionality
     function initStorageManagement() {
+        console.log("Initializing storage management...");
+        
+        // Try to find storage management elements
         const checkStorageBtn = document.getElementById('check-storage');
         const clearStorageBtn = document.getElementById('clear-storage');
         const storageUsedEl = document.getElementById('storage-used');
         const storageInfoEl = document.getElementById('storage-info');
         
-        if (checkStorageBtn) {
-            checkStorageBtn.addEventListener('click', async function() {
-                // Update UI to indicate checking
+        if (!checkStorageBtn || !storageUsedEl || !storageInfoEl) {
+            console.warn("Some storage management elements not found - will retry");
+            // Retry after a short delay to allow DOM to fully load
+            setTimeout(initStorageManagement, 1000);
+            return;
+        }
+        
+        console.log("Storage management elements found");
+        
+        // Set up check storage button
+        checkStorageBtn.addEventListener('click', async function() {
+            // Update UI to indicate checking
+            if (storageInfoEl) {
                 storageInfoEl.textContent = 'Checking storage usage...';
-                
+                storageInfoEl.style.color = 'var(--text-white, #fff)';
+            }
+            
+            try {
                 // Get storage data
                 const quota = await storageManager.checkStorageQuota();
                 
-                if (quota) {
+                // Get cache size
+                const cacheSize = storageManager.getCacheSize();
+                const cacheSizeMB = (cacheSize / (1024 * 1024)).toFixed(2);
+                
+                // Get IndexedDB size
+                const tracks = await indexedDBManager.getAllTracks();
+                const indexedDBSize = tracks.reduce((total, track) => {
+                    return total + (track.blob ? track.blob.size : 0);
+                }, 0);
+                
+                const totalSize = cacheSize + indexedDBSize;
+                const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                
+                if (quota && storageUsedEl && storageInfoEl) {
                     // Update storage meter
                     const percentage = quota.usedPercentage;
                     storageUsedEl.style.width = `${percentage}%`;
                     
                     // Update info text
-                    const usedMB = Math.round(quota.usedBytes / (1024 * 1024) * 10) / 10;
-                    const totalMB = Math.round(quota.totalBytes / (1024 * 1024) * 10) / 10;
-                    storageInfoEl.textContent = `${usedMB} MB used of ${totalMB} MB (${percentage}%)`;
+                    const usedMB = (quota.usedBytes / (1024 * 1024)).toFixed(2);
+                    const totalMB = (quota.totalBytes / (1024 * 1024)).toFixed(2);
+                    storageInfoEl.textContent = `${usedMB} MB used of ${totalMB} MB (${totalSizeMB} MB in music storage)`;
                     
                     // Add color based on usage
                     if (percentage > 80) {
-                        storageUsedEl.style.backgroundColor = 'var(--error-color)';
+                        storageUsedEl.style.backgroundColor = 'var(--error-color, #e25d5d)';
                     } else if (percentage > 60) {
-                        storageUsedEl.style.backgroundColor = 'var(--warning-color)';
+                        storageUsedEl.style.backgroundColor = 'var(--warning-color, #e2b55d)';
                     } else {
-                        storageUsedEl.style.backgroundColor = 'var(--accent-color)';
+                        storageUsedEl.style.backgroundColor = 'var(--accent-color, #5d87e2)';
                     }
-                } else {
+                } else if (storageUsedEl && storageInfoEl) {
                     // Fallback to estimate using localStorage size
                     const storageSize = storageManager.getStoredDataSize();
                     const sizeMB = Math.round(storageSize / (1024 * 1024) * 100) / 100;
-                    storageUsedEl.style.width = `20%`; // Arbitrary value since we don't know the quota
-                    storageInfoEl.textContent = `Approximately ${sizeMB} MB used for music storage`;
+                    storageUsedEl.style.width = `30%`; // Arbitrary value since we don't know the quota
+                    storageInfoEl.textContent = `Approximately ${sizeMB} MB used for storage (${totalSizeMB} MB in music)`;
+                    storageUsedEl.style.backgroundColor = 'var(--accent-color, #5d87e2)';
                 }
-            });
-            
-            // Trigger a check on init
-            setTimeout(() => {
-                checkStorageBtn.click();
-            }, 1000);
-        }
+                
+                // Check cache status for all uploaded tracks
+                if (playerState.uploadedTracks && playerState.uploadedTracks.length > 0) {
+                    playerState.uploadedTracks.forEach(track => {
+                        if (track && track.id) {
+                            checkAndUpdateCacheStatus(track.id);
+                        }
+                    });
+                }
+                
+                console.log("Storage check complete");
+            } catch (error) {
+                console.error("Storage check failed:", error);
+                if (storageInfoEl) {
+                    storageInfoEl.textContent = "Error checking storage";
+                    storageInfoEl.style.color = 'var(--error-color, #e25d5d)';
+                }
+            }
+        });
         
+        // Set up clear storage button
         if (clearStorageBtn) {
             clearStorageBtn.addEventListener('click', function() {
-                storageManager.clearStorage();
-                
-                // Update storage display after clearing
-                if (checkStorageBtn) {
-                    setTimeout(() => {
-                        checkStorageBtn.click();
-                    }, 500);
+                if (confirm('Are you sure you want to clear all music storage? This cannot be undone.')) {
+                    try {
+                        // Clear IndexedDB
+                        indexedDBManager.db.transaction("tracks", "readwrite")
+                            .objectStore("tracks")
+                            .clear();
+                        
+                        // Clear localStorage
+                        localStorage.removeItem('uploadedTracks');
+                        localStorage.removeItem('customPlaylists');
+                        localStorage.removeItem('cachedTracks');
+                        
+                        // Reset state
+                        playerState.uploadedTracks = [];
+                        playerState.cachedTracks = [];
+                        
+                        // Clear UI
+                        if (elements.uploadItemsList) {
+                            elements.uploadItemsList.innerHTML = '';
+                        }
+                        
+                        // Update UI
+                        updateSelectableSongs();
+                        
+                        // Update storage display after clearing
+                        if (checkStorageBtn) {
+                            setTimeout(() => {
+                                checkStorageBtn.click();
+                            }, 500);
+                        }
+                        
+                        showToast('All music storage has been cleared', 'info');
+                    } catch (error) {
+                        console.error("Error clearing storage:", error);
+                        showToast('Error clearing storage: ' + error.message, 'error');
+                    }
                 }
             });
         }
+        
+        // Trigger an initial check
+        setTimeout(() => {
+            if (checkStorageBtn) {
+                checkStorageBtn.click();
+            }
+        }, 1000);
+        
+        console.log("Storage management initialized");
     }
 
     // Toggle song as liked
@@ -1858,7 +2869,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Create the liked songs playlist
-    function createLikedSongsPlaylist() {
+    function createLikedSongsPlaylist(forceCreate = false) {
+        console.log("Creating Liked Songs playlist");
+        
         // Create playlist object
         const likedPlaylist = {
             id: 'liked-songs', // Fixed ID for liked songs
@@ -1866,7 +2879,8 @@ document.addEventListener('DOMContentLoaded', () => {
             description: 'Songs you have liked',
             cover: 'images/liked-songs.jpg', // Default cover 
             tracks: [...playerState.likedSongs],
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isSystem: true // Mark as a system playlist
         };
         
         // Check if we already have a liked playlist
@@ -1874,14 +2888,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (existingIndex !== -1) {
             // Replace existing playlist
             playerState.customPlaylists[existingIndex] = likedPlaylist;
-        } else {
-            // Add new playlist
+            
+            // Update UI if exists
+            const playlistItem = document.querySelector(`.playlist-item[data-id="liked-songs"]`);
+            if (playlistItem) {
+                playlistItem.querySelector('p').textContent = `${likedPlaylist.tracks.length} songs`;
+            } else {
+                // Add to UI if not in the sidebar
+                addPlaylistToSidebar(likedPlaylist);
+            }
+            
+            const playlistCard = document.querySelector(`.playlist-card[data-id="liked-songs"]`);
+            if (playlistCard) {
+                playlistCard.querySelector('p').textContent = `${likedPlaylist.tracks.length} songs`;
+            } else {
+                // Add to playlists grid if not there
+                addPlaylistCard(likedPlaylist);
+            }
+        } else if (playerState.likedSongs.length > 0 || forceCreate) {
+            // Add new playlist if there are liked songs or if force create is true
             playerState.customPlaylists.push(likedPlaylist);
             
             // Add to UI
             addPlaylistToSidebar(likedPlaylist);
             addPlaylistCard(likedPlaylist);
         }
+        
+        // Save to localStorage
+        saveToLocalStorage();
     }
 
     // Function to add a track to play history
@@ -2288,6 +3322,585 @@ document.addEventListener('DOMContentLoaded', () => {
         // Shuffle and take 6 artists
         allArtists.sort(() => Math.random() - 0.5);
         return allArtists.slice(0, 6);
+    }
+
+    // Create and update Local Songs playlist
+    function updateLocalSongsPlaylist() {
+        // Find existing local songs playlist
+        const localPlaylist = playerState.customPlaylists.find(p => p.id === 'local-songs');
+        
+        if (localPlaylist) {
+            // Update existing playlist
+            localPlaylist.tracks = [...playerState.uploadedTracks];
+            
+            // Update UI
+            const playlistItem = document.querySelector(`.playlist-item[data-id="local-songs"]`);
+            if (playlistItem) {
+                playlistItem.querySelector('p').textContent = `${localPlaylist.tracks.length} songs`;
+            }
+            
+            const playlistCard = document.querySelector(`.playlist-card[data-id="local-songs"]`);
+            if (playlistCard) {
+                playlistCard.querySelector('p').textContent = `${localPlaylist.tracks.length} songs`;
+            }
+        } else {
+            // Create new local songs playlist if it doesn't exist
+            createLocalSongsPlaylist();
+        }
+    }
+    
+    // Create the Local Songs playlist
+    function createLocalSongsPlaylist(forceCreate = false) {
+        console.log("Creating Local Songs playlist");
+        
+        // Create playlist object
+        const localPlaylist = {
+            id: 'local-songs', // Fixed ID for local songs
+            name: 'Local Songs',
+            description: 'Songs you have uploaded',
+            cover: 'images/local-songs.jpg', // Default cover, will fallback to a placeholder
+            tracks: [...playerState.uploadedTracks],
+            createdAt: new Date().toISOString(),
+            isSystem: true // Mark as a system playlist
+        };
+        
+        // Check if we already have a local songs playlist
+        const existingIndex = playerState.customPlaylists.findIndex(p => p.id === 'local-songs');
+        if (existingIndex !== -1) {
+            // Replace existing playlist
+            playerState.customPlaylists[existingIndex] = localPlaylist;
+            
+            // Update UI if exists
+            const playlistItem = document.querySelector(`.playlist-item[data-id="local-songs"]`);
+            if (playlistItem) {
+                playlistItem.querySelector('p').textContent = `${localPlaylist.tracks.length} songs`;
+            } else {
+                // Add to UI if not in the sidebar
+                addPlaylistToSidebar(localPlaylist);
+            }
+            
+            const playlistCard = document.querySelector(`.playlist-card[data-id="local-songs"]`);
+            if (playlistCard) {
+                playlistCard.querySelector('p').textContent = `${localPlaylist.tracks.length} songs`;
+            } else {
+                // Add to playlists grid if not there
+                addPlaylistCard(localPlaylist);
+            }
+        } else if (playerState.uploadedTracks.length > 0 || forceCreate) {
+            // Add new playlist if there are uploaded tracks or if force create is true
+            playerState.customPlaylists.push(localPlaylist);
+            
+            // Add to UI
+            addPlaylistToSidebar(localPlaylist);
+            addPlaylistCard(localPlaylist);
+        }
+        
+        // Save to localStorage
+        saveToLocalStorage();
+    }
+
+    // Function to open playlist detail view
+    function openPlaylistDetail(playlist) {
+        // Hide all other pages first
+        const allPages = document.querySelectorAll('.main-page');
+        allPages.forEach(page => page.classList.remove('active'));
+        
+        // Check if playlist detail page already exists, create if not
+        let playlistDetailPage = document.querySelector('.playlist-detail-page');
+        if (!playlistDetailPage) {
+            playlistDetailPage = document.createElement('div');
+            playlistDetailPage.className = 'main-page playlist-detail-page';
+            
+            // Create page header
+            const pageHeader = document.createElement('div');
+            pageHeader.className = 'page-header';
+            pageHeader.innerHTML = `
+                <div class="header-back-btn">
+                    <i class="bi bi-chevron-left"></i>
+                </div>
+                <h1>Playlist Details</h1>
+            `;
+            
+            // Create content wrapper
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'playlist-detail-content';
+            contentWrapper.innerHTML = `
+                <div class="playlist-header-info"></div>
+                <div class="playlist-actions">
+                    <button class="btn primary-btn play-all-btn"><i class="bi bi-play-fill"></i> Play</button>
+                    <button class="btn secondary-btn shuffle-btn"><i class="bi bi-shuffle"></i> Shuffle</button>
+                </div>
+                <div class="playlist-songs-list">
+                    <p class="loading-text">Loading songs...</p>
+                </div>
+            `;
+            
+            playlistDetailPage.appendChild(pageHeader);
+            playlistDetailPage.appendChild(contentWrapper);
+            
+            // Add the page to main content
+            document.querySelector('.main-content').appendChild(playlistDetailPage);
+            
+            // Setup back button event
+            pageHeader.querySelector('.header-back-btn').addEventListener('click', () => {
+                navigateToPage('playlists');
+            });
+        }
+        
+        // Make playlist detail page active
+        playlistDetailPage.classList.add('active');
+        
+        // Get playlist if ID was passed instead of full playlist object
+        let actualPlaylist = playlist;
+        if (typeof playlist === 'string') {
+            actualPlaylist = findPlaylistById(playlist);
+            
+            if (!actualPlaylist) {
+                showToast('Playlist not found');
+                navigateToPage('playlists');
+                return;
+            }
+        }
+        
+        // Update UI with playlist info
+        updatePlaylistDetailUI(actualPlaylist);
+        
+        // Setup event listeners
+        setupPlaylistDetailActions(actualPlaylist);
+    }
+
+    // Update playlist detail UI with playlist information
+    function updatePlaylistDetailUI(playlist) {
+        const playlistDetailPage = document.querySelector('.playlist-detail-page');
+        if (!playlistDetailPage) return;
+        
+        // Update header info
+        const headerInfo = playlistDetailPage.querySelector('.playlist-header-info');
+        if (headerInfo) {
+            // Get total duration of all songs
+            const totalDuration = playlist.tracks ? playlist.tracks.reduce((total, track) => {
+                return total + (track.duration || 0);
+            }, 0) : 0;
+            
+            // Format duration as MM:SS
+            const formattedDuration = formatDuration(totalDuration);
+            
+            headerInfo.innerHTML = `
+                <div class="playlist-image-container">
+                    <img src="${playlist.cover || 'images/playlist-default.jpg'}" alt="${playlist.name}" class="playlist-image">
+                </div>
+                <div class="playlist-info">
+                    <h2 class="playlist-name">${playlist.name || 'Untitled Playlist'}</h2>
+                    <p class="playlist-description">${playlist.description || 'No description'}</p>
+                    <p class="playlist-stats">${playlist.tracks ? playlist.tracks.length : 0} songs • ${formattedDuration}</p>
+                </div>
+            `;
+        }
+        
+        // Generate songs list
+        generatePlaylistSongsList(playlist);
+    }
+
+    // Generate song list for playlist
+    function generatePlaylistSongsList(playlist) {
+        const songsListContainer = document.querySelector('.playlist-detail-page .playlist-songs-list');
+        if (!songsListContainer) return;
+        
+        // Clear previous content
+        songsListContainer.innerHTML = '';
+        
+        if (!playlist.tracks || playlist.tracks.length === 0) {
+            songsListContainer.innerHTML = '<p class="empty-playlist">This playlist has no songs yet.</p>';
+            return;
+        }
+        
+        // Create songs list
+        playlist.tracks.forEach((track, index) => {
+            const songItem = document.createElement('div');
+            songItem.className = 'song-item';
+            songItem.dataset.index = index;
+            songItem.dataset.id = track.id;
+            
+            // Check if song is currently playing
+            const isPlaying = playerState.currentTrack && playerState.currentTrack.id === track.id;
+            if (isPlaying) {
+                songItem.classList.add('playing');
+            }
+            
+            // Check if song is liked
+            const isLiked = playerState.likedSongs.some(likedTrack => likedTrack.id === track.id);
+            
+            songItem.innerHTML = `
+                <div class="song-number">${index + 1}</div>
+                <div class="song-play-btn">
+                    <i class="bi ${isPlaying ? 'bi-pause-fill' : 'bi-play-fill'}"></i>
+                </div>
+                <div class="song-info">
+                    <div class="song-title">${track.title || 'Unknown Title'}</div>
+                    <div class="song-artist">${track.artist || 'Unknown Artist'}</div>
+                </div>
+                <div class="song-album">${track.album || 'Unknown Album'}</div>
+                <div class="song-duration">${formatDuration(track.duration)}</div>
+                <div class="song-actions">
+                    <button class="song-like-btn ${isLiked ? 'liked' : ''}">
+                        <i class="bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}"></i>
+                    </button>
+                    <button class="song-options-btn">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                </div>
+            `;
+            
+            songsListContainer.appendChild(songItem);
+        });
+        
+        // Add event listeners
+        setupPlaylistDetailSongs(playlist);
+    }
+
+    // Setup action buttons for playlist detail
+    function setupPlaylistDetailActions(playlist) {
+        const playlistDetailPage = document.querySelector('.playlist-detail-page');
+        if (!playlistDetailPage) return;
+        
+        const playAllBtn = playlistDetailPage.querySelector('.play-all-btn');
+        const shuffleBtn = playlistDetailPage.querySelector('.shuffle-btn');
+        
+        if (playAllBtn) {
+            playAllBtn.addEventListener('click', () => {
+                if (playlist.tracks && playlist.tracks.length > 0) {
+                    // Set current playlist and start playing from first track
+                    playerState.currentPlaylist = playlist;
+                    playerState.currentPlaylistIndex = 0;
+                    playerState.shuffleMode = false;
+                    playTrack(playlist.tracks[0], 0);
+                    updatePlayerUI();
+                    showToast('Playing all songs');
+                } else {
+                    showToast('This playlist has no songs', 'error');
+                }
+            });
+        }
+        
+        if (shuffleBtn) {
+            shuffleBtn.addEventListener('click', () => {
+                if (playlist.tracks && playlist.tracks.length > 0) {
+                    // Create a shuffled version of the tracks
+                    playerState.currentPlaylist = playlist;
+                    playerState.shuffleMode = true;
+                    playerState.shuffledIndices = createShuffledIndices(playlist.tracks.length);
+                    const firstIndex = playerState.shuffledIndices[0];
+                    playerState.currentPlaylistIndex = 0;
+                    playTrack(playlist.tracks[firstIndex], firstIndex);
+                    updatePlayerUI();
+                    showToast('Playing in shuffle mode');
+                } else {
+                    showToast('This playlist has no songs', 'error');
+                }
+            });
+        }
+    }
+
+    // Setup event listeners for songs in playlist detail view
+    function setupPlaylistDetailSongs(playlist) {
+        const songItems = document.querySelectorAll('.playlist-detail-page .song-item');
+        
+        songItems.forEach((songItem, index) => {
+            const songId = songItem.dataset.id;
+            const songIndex = parseInt(songItem.dataset.index);
+            const track = playlist.tracks[songIndex];
+            
+            // Play button click
+            const playBtn = songItem.querySelector('.song-play-btn');
+            if (playBtn) {
+                playBtn.addEventListener('click', () => {
+                    // Set current playlist and play the selected track
+                    playerState.currentPlaylist = playlist;
+                    playerState.shuffleMode = false;
+                    playerState.currentPlaylistIndex = songIndex;
+                    playTrack(track, songIndex);
+                    
+                    // Update UI
+                    updatePlayerUI();
+                    
+                    // Update playing status in the list
+                    songItems.forEach(item => item.classList.remove('playing'));
+                    songItem.classList.add('playing');
+                    songItem.querySelector('.song-play-btn i').className = 'bi bi-pause-fill';
+                });
+            }
+            
+            // Like button click
+            const likeBtn = songItem.querySelector('.song-like-btn');
+            if (likeBtn) {
+                likeBtn.addEventListener('click', () => {
+                    toggleLikeTrack(track);
+                    
+                    // Update like button UI
+                    const isLiked = playerState.likedSongs.some(likedTrack => likedTrack.id === track.id);
+                    likeBtn.className = `song-like-btn ${isLiked ? 'liked' : ''}`;
+                    likeBtn.querySelector('i').className = `bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}`;
+                    
+                    // Show toast
+                    showToast(`${isLiked ? 'Added to' : 'Removed from'} Liked Songs`);
+                });
+            }
+            
+            // Options button click
+            const optionsBtn = songItem.querySelector('.song-options-btn');
+            if (optionsBtn) {
+                optionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Create and position context menu
+                    showSongContextMenu(track, e.clientX, e.clientY);
+                });
+            }
+            
+            // Double click to play
+            songItem.addEventListener('dblclick', () => {
+                // Set current playlist and play the selected track
+                playerState.currentPlaylist = playlist;
+                playerState.shuffleMode = false;
+                playerState.currentPlaylistIndex = songIndex;
+                playTrack(track, songIndex);
+                
+                // Update UI
+                updatePlayerUI();
+                
+                // Update playing status in the list
+                songItems.forEach(item => item.classList.remove('playing'));
+                songItem.classList.add('playing');
+                songItem.querySelector('.song-play-btn i').className = 'bi bi-pause-fill';
+            });
+        });
+    }
+
+    // Function to toggle like status of a track
+    function toggleLikeTrack(track) {
+        if (!track || !track.id) return;
+        
+        // Check if already liked
+        const likedIndex = playerState.likedSongs.findIndex(likedTrack => likedTrack.id === track.id);
+        
+        if (likedIndex === -1) {
+            // Add to liked songs
+            playerState.likedSongs.push(track);
+        } else {
+            // Remove from liked songs
+            playerState.likedSongs.splice(likedIndex, 1);
+        }
+        
+        // Save to localStorage
+        savePlayerState();
+        
+        // Update UI if on liked songs page
+        if (document.querySelector('.liked-songs-page.active')) {
+            loadLikedSongs();
+        }
+    }
+
+    // Show context menu for song actions
+    function showSongContextMenu(track, x, y) {
+        // Remove existing context menu if any
+        const existingMenu = document.querySelector('.context-menu');
+        if (existingMenu) {
+            existingMenu.remove();
+        }
+        
+        // Create menu element
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        
+        // Calculate position
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Adjust position if too close to edge
+        const menuWidth = 220; // Approximate width of menu
+        const menuHeight = 200; // Approximate height of menu
+        
+        let posX = x;
+        let posY = y;
+        
+        if (x + menuWidth > viewportWidth) {
+            posX = viewportWidth - menuWidth - 10;
+        }
+        
+        if (y + menuHeight > viewportHeight) {
+            posY = viewportHeight - menuHeight - 10;
+        }
+        
+        menu.style.left = `${posX}px`;
+        menu.style.top = `${posY}px`;
+        
+        // Add menu items
+        const isLiked = playerState.likedSongs.some(likedTrack => likedTrack.id === track.id);
+        
+        menu.innerHTML = `
+            <div class="context-menu-item play-item">
+                <i class="bi bi-play-fill"></i> Play
+            </div>
+            <div class="context-menu-item add-to-queue-item">
+                <i class="bi bi-list-ul"></i> Add to Queue
+            </div>
+            <div class="context-menu-item like-item">
+                <i class="bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}"></i> 
+                ${isLiked ? 'Remove from Liked Songs' : 'Add to Liked Songs'}
+            </div>
+            <div class="context-menu-item add-to-playlist-item">
+                <i class="bi bi-music-note-list"></i> Add to Playlist
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item view-artist-item">
+                <i class="bi bi-person"></i> View Artist
+            </div>
+            <div class="context-menu-item view-album-item">
+                <i class="bi bi-disc"></i> View Album
+            </div>
+        `;
+        
+        // Add to document
+        document.body.appendChild(menu);
+        
+        // Add event listeners
+        const playItem = menu.querySelector('.play-item');
+        const addToQueueItem = menu.querySelector('.add-to-queue-item');
+        const likeItem = menu.querySelector('.like-item');
+        const addToPlaylistItem = menu.querySelector('.add-to-playlist-item');
+        const viewArtistItem = menu.querySelector('.view-artist-item');
+        const viewAlbumItem = menu.querySelector('.view-album-item');
+        
+        playItem.addEventListener('click', () => {
+            playTrack(track);
+            menu.remove();
+        });
+        
+        addToQueueItem.addEventListener('click', () => {
+            // Add to queue logic
+            if (playerState.queue) {
+                playerState.queue.push(track);
+                showToast('Added to queue');
+            }
+            menu.remove();
+        });
+        
+        likeItem.addEventListener('click', () => {
+            toggleLikeTrack(track);
+            menu.remove();
+        });
+        
+        addToPlaylistItem.addEventListener('click', () => {
+            // Will implement later - show playlist selection modal
+            showToast('Add to playlist feature coming soon');
+            menu.remove();
+        });
+        
+        viewArtistItem.addEventListener('click', () => {
+            // Will implement later - navigate to artist page
+            showToast('View artist feature coming soon');
+            menu.remove();
+        });
+        
+        viewAlbumItem.addEventListener('click', () => {
+            // Will implement later - navigate to album page
+            showToast('View album feature coming soon');
+            menu.remove();
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }
+
+    // Function to render all uploaded tracks in the upload list
+    function renderUploadedTracks() {
+        // Clear the current list first
+        if (elements.uploadItemsList) {
+            elements.uploadItemsList.innerHTML = '';
+            
+            // Add all uploaded tracks to the UI
+            if (playerState.uploadedTracks.length > 0) {
+                playerState.uploadedTracks.forEach(track => {
+                    addUploadItem(track, false);
+                });
+            } else {
+                // Show empty state
+                elements.uploadItemsList.innerHTML = `
+                    <div class="empty-uploads">
+                        <i class="bi bi-cloud-upload"></i>
+                        <p>No uploaded tracks yet</p>
+                        <p class="subtext">Click the button above to upload your music</p>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Function to render all playlists on the playlists page
+    function renderPlaylists() {
+        console.log("Rendering all playlists to the playlists grid");
+        
+        if (!elements.playlistsGrid) {
+            console.warn("Playlists grid element not found");
+            return;
+        }
+        
+        // Clear the current grid
+        elements.playlistsGrid.innerHTML = '';
+        
+        // Check if we have any playlists
+        if (playerState.customPlaylists.length === 0) {
+            // Show empty state
+            elements.playlistsGrid.innerHTML = `
+                <div class="empty-playlists">
+                    <i class="bi bi-music-note-list"></i>
+                    <p>No playlists yet</p>
+                    <p class="subtext">Create your first playlist to get started</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Add system playlists first (Liked Songs and Local Songs)
+        const systemPlaylists = playerState.customPlaylists.filter(playlist => 
+            playlist.isSystem || playlist.id === 'liked-songs' || playlist.id === 'local-songs'
+        );
+        
+        // Add user created playlists
+        const userPlaylists = playerState.customPlaylists.filter(playlist => 
+            !playlist.isSystem && playlist.id !== 'liked-songs' && playlist.id !== 'local-songs'
+        );
+        
+        // Add a header for system playlists if we have any
+        if (systemPlaylists.length > 0) {
+            const systemHeader = document.createElement('div');
+            systemHeader.className = 'playlist-section-header';
+            systemHeader.innerHTML = '<h3>System Playlists</h3>';
+            elements.playlistsGrid.appendChild(systemHeader);
+            
+            // Add system playlists
+            systemPlaylists.forEach(playlist => {
+                addPlaylistCard(playlist);
+            });
+        }
+        
+        // Add a header for user playlists if we have any
+        if (userPlaylists.length > 0) {
+            const userHeader = document.createElement('div');
+            userHeader.className = 'playlist-section-header';
+            userHeader.innerHTML = '<h3>Your Playlists</h3>';
+            elements.playlistsGrid.appendChild(userHeader);
+            
+            // Add user playlists
+            userPlaylists.forEach(playlist => {
+                addPlaylistCard(playlist);
+            });
+        }
     }
 
     // Start the player
