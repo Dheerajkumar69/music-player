@@ -124,6 +124,60 @@ body {
   transition: color var(--transition-speed) ease;
 }
 
+/* Sidebar count badge */
+.menu-item .count-badge {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 12px;
+    border-radius: 10px;
+    padding: 2px 6px;
+    margin-left: 8px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Upload helper message */
+.upload-helper-message {
+    background-color: rgba(29, 185, 84, 0.1);
+    border-left: 3px solid var(--accent-color);
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-radius: 4px;
+}
+
+/* Empty state styling */
+.empty-uploads, .empty-playlists {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-uploads i, .empty-playlists i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.empty-uploads h3, .empty-playlists h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: var(--text-white);
+}
+
+.empty-uploads p, .empty-playlists p {
+    font-size: 14px;
+    max-width: 300px;
+}
+
 /* Song List in Sidebar */
 .song-list {
   margin-top: 20px;
@@ -201,15 +255,18 @@ body {
   display: none;
   background: transparent;
   border: none;
-  color: var(--text-white);
   font-size: 24px;
+  color: var(--text-white);
   cursor: pointer;
-  margin-right: 15px;
-  transition: color var(--transition-speed) ease;
+  padding: 5px;
+  border-radius: 5px;
+  margin-right: 10px;
+  z-index: 100;
+  position: relative;
 }
 
 .sidebar-toggle:hover {
-  color: var(--accent-color);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Mobile Sidebar */
@@ -223,6 +280,7 @@ body {
   z-index: 1000;
   transition: left var(--transition-speed) ease;
   box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
+  background-color: var(--sidebar-dark);
 }
 
 .show-sidebar {
@@ -239,10 +297,12 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
+  transition: opacity 0.3s ease;
 }
 
 .show-overlay {
   display: block;
+  opacity: 1;
 }
 
 /* Main Content Area */
@@ -679,7 +739,7 @@ body {
   background: linear-gradient(90deg, #00c2e6 0%, #00d6fc 100%);
   border-radius: 3px;
   box-shadow: 0 0 5px rgba(0, 214, 252, 0.5);
-  transition: all 0.1s ease;
+  will-change: width;
 }
 
 .progress-circle {
@@ -694,7 +754,8 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 10px 2px rgba(0, 214, 252, 0.4);
   opacity: 0;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
 }
 
 .progress-bar:hover .progress-circle {
@@ -827,7 +888,21 @@ body {
   }
   
   .mobile-sidebar {
-    display: block;
+    display: none;
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100vh;
+    width: 80% !important;
+    max-width: 300px;
+    z-index: 1000;
+    transition: left var(--transition-speed) ease;
+    box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
+  }
+  
+  .show-sidebar {
+    display: block !important;
+    left: 0 !important;
   }
   
   .sidebar-toggle {
